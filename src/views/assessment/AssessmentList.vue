@@ -1,0 +1,57 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { classes, curricula, formAssessments, assessments, multiraterMethods, presentationMethods, validationMethods, skillTestMethods, verifyMethods } from '@/data/mockData'
+
+const auth = useAuthStore()
+const router = useRouter()
+const myClasses = classes.filter(c => c.raters.includes(auth.userId) || (c.assessmentAssessorAssignments ?? []).some(a => a.raterIds.includes(auth.userId)))
+
+const formMethodTypes = ['multirater', 'presentation', 'validation', 'skillTest', 'verify'] as const
+
+function findMethodEntity(type: string, contentId: string) {
+  if (type === 'multirater') return multiraterMethods.find(m => m.id === contentId)
+  if (type === 'presentation') return presentationMethods.find(m => m.id === contentId)
+  if (type === 'validation') return validationMethods.find(m => m.id === contentId)
+  if (type === 'skillTest') return skillTestMethods.find(m => m.id === contentId)
+  if (type === 'verify') return verifyMethods.find(m => m.id === contentId)
+  return undefined
+}
+
+interface PendingItem { methodId: string; entityTitle: string; className: string; classId: string }
+const pending = computed<PendingItem[]>(() => {
+  const result: PendingItem[] = []
+  myClasses.forEach(cls => {
+    const curriculum = curricula.find(c => c.id === cls.curriculumId)
+    curriculum?.items.forEach(item => {
+      if (!formMethodTypes.includes(item.trainingMethodType as any)) return
+      const assignedParticipants = (cls.assessmentAssessorAssignments ?? []).filter(a => a.trainingMethodId === item.id && a.raterIds.includes(auth.userId))
+      if (cls.assessmentAssessorAssignments?.length && assignedParticipants.length === 0) return
+      const done = assessments.some(a => a.raterId === auth.userId && a.classId === cls.id && a.trainingMethodId === item.id)
+      if (!done) {
+        const entity = findMethodEntity(item.trainingMethodType, item.contentId)
+        if (entity) result.push({ methodId: item.id, entityTitle: entity.title, className: cls.name, classId: cls.id })
+      }
+    })
+  })
+  return result
+})
+</script>
+
+<template>
+  <div>
+    <h2 class="text-2xl font-bold mb-6">My Assessments</h2>
+    <h3 class="font-semibold mb-3">Pending</h3>
+    <div v-if="pending.length === 0" class="text-gray-400 text-sm mb-6">No pending assessments</div>
+    <div v-for="s in pending" :key="s.methodId + s.classId" class="bg-white rounded shadow p-4 mb-3 flex items-center justify-between">
+      <div><p class="font-medium">{{ s.entityTitle }}</p><p class="text-sm text-gray-500">{{ s.className }}</p></div>
+      <button @click="router.push(`/rater/assessments/${s.methodId}?classId=${s.classId}`)" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">Assess</button>
+    </div>
+    <h3 class="font-semibold mb-3 mt-6">Completed</h3>
+    <div v-for="a in assessments.filter(ass => ass.raterId === auth.userId)" :key="a.id" class="bg-white rounded shadow p-4">
+      <p class="font-medium">{{ formAssessments.find(f => f.id === a.formAssessmentId)?.title ?? 'Assessment' }}</p>
+      <p class="text-sm text-gray-500">{{ a.scores.length }} fields scored</p>
+    </div>
+  </div>
+</template>

@@ -1,0 +1,448 @@
+import type {
+  User, Test, Materi, InClass, FormAssessment,
+  Curriculum, Class, KnowledgeTestClass,
+  TestAttempt, Assessment, LGI, ParticipantProgress,
+  Remedial, AuditLogEntry,
+  MultiraterMethod, PresentationMethod, ValidationMethod,
+  SkillTestMethod, VerifyMethod, AccountingMethod,
+} from '@/types'
+
+// ── Users (5 roles) ──
+export const users: User[] = [
+  { id: 'u1', email: 'budi@gacoan.id', password: 'password123', name: 'Budi Santoso', role: 'participant' },
+  { id: 'u2', email: 'ani@gacoan.id', password: 'password123', name: 'Ani Rahmawati', role: 'instructor' },
+  { id: 'u3', email: 'hendra@gacoan.id', password: 'password123', name: 'Hendra Gunawan', role: 'rater' },
+  { id: 'u4', email: 'ibu_siti@gacoan.id', password: 'password123', name: 'Ibu Siti', role: 'supervisor' },
+  { id: 'u5', email: 'admin@gacoan.id', password: 'password123', name: 'Admin User', role: 'admin' },
+  { id: 'u6', email: 'rina@gacoan.id', password: 'password123', name: 'Rina Wijaya', role: 'participant' },
+  { id: 'u7', email: 'doni@gacoan.id', password: 'password123', name: 'Doni Prasetyo', role: 'participant' },
+  { id: 'u8', email: 'sari@gacoan.id', password: 'password123', name: 'Sari Dewi', role: 'participant' },
+  { id: 'u9', email: 'agung@gacoan.id', password: 'password123', name: 'Agung Hidayat', role: 'participant' },
+  { id: 'u10', email: 'dian@gacoan.id', password: 'password123', name: 'Dian Permata', role: 'participant' },
+  { id: 'u11', email: 'rudi@gacoan.id', password: 'password123', name: 'Rudi Hartono', role: 'rater' },
+  { id: 'u12', email: 'maya@gacoan.id', password: 'password123', name: 'Maya Indah', role: 'rater' },
+  { id: 'u13', email: 'bambang@gacoan.id', password: 'password123', name: 'Bambang Sutejo', role: 'instructor' },
+  { id: 'u14', email: 'citra@gacoan.id', password: 'password123', name: 'Citra Lestari', role: 'participant' },
+  { id: 'u15', email: 'eko@gacoan.id', password: 'password123', name: 'Eko Prasetyo', role: 'participant' },
+]
+
+// ── Tests ──
+export const tests: Test[] = [
+  {
+    id: 't1', title: 'Pretest - Komunikasi Efektif',
+    description: 'Mengukur pemahaman dasar komunikasi efektif',
+    timeLimit: 30, randomize: true, pickCount: 4,
+    questions: [
+      { id: 'q1', type: 'mcq', text: 'Apa yang dimaksud dengan komunikasi efektif?', points: 10, options: [
+        { id: 'q1a', text: 'Pertukaran informasi yang jelas dan dipahami bersama', isCorrect: true },
+        { id: 'q1b', text: 'Berbicara dengan suara keras', isCorrect: false },
+        { id: 'q1c', text: 'Menulis pesan panjang', isCorrect: false },
+      ]},
+      { id: 'q2', type: 'mcq', text: 'Active listening melibatkan:', points: 10, options: [
+        { id: 'q2a', text: 'Hanya mendengar tanpa merespon', isCorrect: false },
+        { id: 'q2b', text: 'Mendengar, memahami, dan merespon dengan tepat', isCorrect: true },
+        { id: 'q2c', text: 'Menginterupsi pembicara', isCorrect: false },
+      ]},
+      { id: 'q3', type: 'essay', text: 'Jelaskan 3 hambatan komunikasi yang sering terjadi di tempat kerja!', points: 20 },
+      { id: 'q4', type: 'fillBlank', text: 'Komunikasi ___ adalah komunikasi yang dilakukan melalui kata-kata lisan.', points: 10, correctAnswer: 'verbal' },
+      { id: 'q5', type: 'dragDrop', text: 'Urutkan langkah-langkah komunikasi efektif:', points: 15, items: [
+        { id: 'q5a', text: 'Mendengarkan aktif', correctOrder: 2 },
+        { id: 'q5b', text: 'Menyampaikan pesan', correctOrder: 1 },
+        { id: 'q5c', text: 'Meminta umpan balik', correctOrder: 3 },
+      ]},
+    ],
+    createdBy: 'u5', createdAt: '2026-01-10T08:00:00Z',
+  },
+  {
+    id: 't2', title: 'Posttest - Komunikasi Efektif',
+    description: 'Mengukur pemahaman setelah pelatihan',
+    timeLimit: 30, randomize: false,
+    questions: [
+      { id: 'q6', type: 'mcq', text: 'Feedback yang efektif sebaiknya:', points: 10, options: [
+        { id: 'q6a', text: 'Spesifik dan membangun', isCorrect: true },
+        { id: 'q6b', text: 'Umum dan personal', isCorrect: false },
+        { id: 'q6c', text: 'Diberikan di depan banyak orang', isCorrect: false },
+      ]},
+      { id: 'q7', type: 'essay', text: 'Bagaimana cara memberikan feedback konstruktif? Beri contoh!', points: 20 },
+      { id: 'q8', type: 'fillBlank', text: 'Komunikasi ___ menggunakan bahasa tubuh, ekspresi wajah, dan gestur.', points: 10, correctAnswer: 'nonverbal' },
+    ],
+    createdBy: 'u5', createdAt: '2026-01-15T08:00:00Z',
+  },
+  {
+    id: 't3', title: 'Knowledge Test - Pelayanan Prima',
+    description: 'Tes pengetahuan dasar pelayanan prima untuk screening',
+    timeLimit: 45, randomize: true, pickCount: 5,
+    questions: [
+      { id: 'q9', type: 'mcq', text: 'Apa konsep dasar pelayanan prima?', points: 10, options: [
+        { id: 'q9a', text: 'Memberi layanan terbaik sesuai kebutuhan pelanggan', isCorrect: true },
+        { id: 'q9b', text: 'Memberi layanan termurah', isCorrect: false },
+        { id: 'q9c', text: 'Memberi layanan cepat tanpa kualitas', isCorrect: false },
+      ]},
+      { id: 'q10', type: 'mcq', text: 'Sikap yang harus dimiliki pelayan pelanggan:', points: 10, options: [
+        { id: 'q10a', text: 'Sabar dan ramah', isCorrect: true },
+        { id: 'q10b', text: 'Cepat marah', isCorrect: false },
+        { id: 'q10c', text: 'Acuh tak acuh', isCorrect: false },
+      ]},
+      { id: 'q11', type: 'essay', text: 'Jelaskan 5 prinsip pelayanan prima!', points: 30 },
+      { id: 'q12', type: 'fillBlank', text: 'Pelayanan prima bertujuan menciptakan kepuasan ___.', points: 10, correctAnswer: 'pelanggan' },
+    ],
+    createdBy: 'u5', createdAt: '2026-02-01T08:00:00Z',
+  },
+  {
+    id: 't4', title: 'Accounting Case Study',
+    description: 'Studi kasus akuntansi dengan soal essay',
+    timeLimit: 60, randomize: false,
+    questions: [
+      { id: 'q13', type: 'essay', text: 'Analisis laporan laba rugi berikut: Perusahaan A memiliki pendapatan Rp500jt, HPP Rp300jt, beban operasional Rp100jt. Hitung laba bersih dan jelaskan implikasinya!', points: 30 },
+      { id: 'q14', type: 'essay', text: 'Jelaskan perbedaan antara metode FIFO dan LIFO dalam pencatatan persediaan. Berikan contoh perhitungan!', points: 30 },
+      { id: 'q15', type: 'essay', text: 'Buat jurnal penyesuaian untuk: a) Penyusutan aset tetap Rp5jt, b) Beban gaji yang masih harus dibayar Rp3jt, c) Pendapatan diterima di muka Rp2jt.', points: 40 },
+    ],
+    createdBy: 'u5', createdAt: '2026-03-01T08:00:00Z',
+  },
+]
+
+// ── Materi ──
+export const materis: Materi[] = [
+  { id: 'm1', title: 'Modul Komunikasi Efektif', type: 'pdf', embedUrl: 'https://drive.google.com/file/d/example1/preview', description: 'Modul lengkap komunikasi efektif', createdBy: 'u5', createdAt: '2026-01-05T08:00:00Z' },
+  { id: 'm2', title: 'Slide Presentasi Komunikasi', type: 'slide', embedUrl: 'https://docs.google.com/presentation/d/example2/preview', description: 'Slide materi komunikasi', createdBy: 'u5', createdAt: '2026-01-06T08:00:00Z' },
+  { id: 'm3', title: 'Video Teknik Komunikasi', type: 'video', embedUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ', description: 'Video pembelajaran teknik komunikasi', createdBy: 'u5', createdAt: '2026-01-07T08:00:00Z' },
+  { id: 'm4', title: 'H5P Interaktif Komunikasi', type: 'h5p', embedUrl: 'https://h5p.org/h5p/embed/1', description: 'Pembelajaran interaktif', createdBy: 'u5', createdAt: '2026-01-08T08:00:00Z' },
+  { id: 'm5', title: 'Modul Pelayanan Prima', type: 'pdf', embedUrl: 'https://drive.google.com/file/d/example5/preview', description: 'Modul pelayanan prima', createdBy: 'u5', createdAt: '2026-02-01T08:00:00Z' },
+]
+
+// ── In-Class ──
+export const inClasses: InClass[] = [
+  {
+    id: 'ic1', title: 'Sesi 1 - Dasar Komunikasi', description: 'Pengantar komunikasi efektif',
+    categories: [
+      { id: 'cat1', name: 'Teori Komunikasi', weight: 40, inClassId: 'ic1', preTestId: 't1', postTestId: 't2', materiIds: ['m1', 'm2'] },
+      { id: 'cat2', name: 'Praktik Komunikasi', weight: 60, inClassId: 'ic1', preTestId: 't1', postTestId: 't2', materiIds: ['m3', 'm4'] },
+    ],
+    createdBy: 'u5', createdAt: '2026-01-10T08:00:00Z',
+  },
+  {
+    id: 'ic2', title: 'Sesi 2 - Komunikasi Lanjutan', description: 'Teknik komunikasi tingkat lanjut',
+    categories: [
+      { id: 'cat3', name: 'Negosiasi', weight: 50, inClassId: 'ic2', preTestId: 't1', postTestId: 't2', materiIds: ['m1'] },
+      { id: 'cat4', name: 'Public Speaking', weight: 50, inClassId: 'ic2', preTestId: 't1', postTestId: 't2', materiIds: ['m2', 'm3'] },
+    ],
+    createdBy: 'u5', createdAt: '2026-01-20T08:00:00Z',
+  },
+]
+
+// ── Form Assessments (for Multirater, Presentation, Validation, Skill Test, Verify) ──
+export const formAssessments: FormAssessment[] = [
+  {
+    id: 'f1', title: 'Multirater - Kompetensi Karyawan',
+    description: 'Penilaian multi-rater untuk kompetensi karyawan frontliner',
+    fields: [
+      { id: 'ff1', type: 'rating', label: 'Komunikasi dengan pelanggan', required: true, points: 20, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff2', type: 'rating', label: 'Kerjasama tim', required: true, points: 20, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff3', type: 'rating', label: 'Inisiatif', required: true, points: 20, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff4', type: 'mcq', label: 'Kesesuaian dengan SOP', required: true, points: 20, options: ['Sangat sesuai', 'Sesuai', 'Kurang sesuai', 'Tidak sesuai'] },
+      { id: 'ff5', type: 'essay', label: 'Catatan tambahan / feedback', required: false, points: 20 },
+    ],
+    createdBy: 'u5', createdAt: '2026-02-15T08:00:00Z',
+  },
+  {
+    id: 'f2', title: 'Presentation Rubric',
+    description: 'Rubrik penilaian presentasi peserta',
+    fields: [
+      { id: 'ff6', type: 'rating', label: 'Kualitas materi', required: true, points: 25, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff7', type: 'rating', label: 'Penyampaian', required: true, points: 25, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff8', type: 'rating', label: 'Penguasaan topik', required: true, points: 25, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff9', type: 'essay', label: 'Saran perbaikan', required: false, points: 25 },
+    ],
+    createdBy: 'u5', createdAt: '2026-02-20T08:00:00Z',
+  },
+  {
+    id: 'f3', title: 'Validation - Supervisor Assessment',
+    description: 'Penilaian supervisor untuk validasi kompetensi',
+    fields: [
+      { id: 'ff10', type: 'rating', label: 'Pemahaman prosedur', required: true, points: 20, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff11', type: 'rating', label: 'Keterampilan teknis', required: true, points: 20, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff12', type: 'trueFalse', label: 'Memenuhi standar minimal', required: true, points: 20 },
+      { id: 'ff13', type: 'essay', label: 'Rekomendasi pengembangan', required: false, points: 40 },
+    ],
+    createdBy: 'u5', createdAt: '2026-02-25T08:00:00Z',
+  },
+  {
+    id: 'f4', title: 'Skill Test - Praktek Lapangan',
+    description: 'Penilaian praktek keterampilan di lapangan',
+    fields: [
+      { id: 'ff14', type: 'rating', label: 'Ketepatan prosedur', required: true, points: 20, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff15', type: 'rating', label: 'Kecepatan kerja', required: true, points: 20, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff16', type: 'rating', label: 'Kualitas hasil', required: true, points: 20, ratingMin: 1, ratingMax: 5 },
+      { id: 'ff17', type: 'essay', label: 'Catatan penguji', required: false, points: 40 },
+    ],
+    createdBy: 'u5', createdAt: '2026-03-01T08:00:00Z',
+  },
+  {
+    id: 'f5', title: 'Verify - Q&A Session',
+    description: 'Verifikasi akhir melalui sesi tanya jawab',
+    fields: [
+      { id: 'ff18', type: 'essay', label: 'Pertanyaan 1: Jelaskan tugas pokok frontliner', required: true, points: 25 },
+      { id: 'ff19', type: 'essay', label: 'Pertanyaan 2: Bagaimana menangani komplain pelanggan?', required: true, points: 25 },
+      { id: 'ff20', type: 'trueFalse', label: 'Kesimpulan: peserta layak lulus?', required: true, points: 50 },
+    ],
+    createdBy: 'u5', createdAt: '2026-03-05T08:00:00Z',
+  },
+]
+
+// ── Multirater Methods ──
+export const multiraterMethods: MultiraterMethod[] = [
+  {
+    id: 'mr1', title: 'Multirater - Kompetensi Frontliner',
+    description: 'Penilaian 360 derajat untuk kompetensi frontliner',
+    categories: [
+      { id: 'mc1', name: 'Komunikasi & Service', weight: 40, formAssessmentId: 'f1' },
+      { id: 'mc2', name: 'Kerjasama Tim', weight: 30, formAssessmentId: 'f1' },
+      { id: 'mc3', name: 'Inisiatif & Problem Solving', weight: 30, formAssessmentId: 'f1' },
+    ],
+    assessorTypes: ['superior', 'colleague', 'subordinate'],
+    createdBy: 'u5', createdAt: '2026-02-15T08:00:00Z',
+  },
+]
+
+// ── Presentation Methods ──
+export const presentationMethods: PresentationMethod[] = [
+  {
+    id: 'pr1', title: 'Presentasi Akhir Program',
+    description: 'Presentasi penutup program pengembangan frontliner',
+    categories: [
+      { id: 'pc1', name: 'Kualitas Materi', weight: 40, formAssessmentId: 'f2' },
+      { id: 'pc2', name: 'Teknik Presentasi', weight: 60, formAssessmentId: 'f2' },
+    ],
+    createdBy: 'u5', createdAt: '2026-02-20T08:00:00Z',
+  },
+]
+
+// ── Validation Methods ──
+export const validationMethods: ValidationMethod[] = [
+  {
+    id: 'vl1', title: 'Validasi Supervisor - Level 1',
+    description: 'Validasi kompetensi oleh Area Manager / RM',
+    categories: [
+      { id: 'vc1', name: 'Pemahaman Prosedur', weight: 50, formAssessmentId: 'f3' },
+      { id: 'vc2', name: 'Keterampilan Lapangan', weight: 50, formAssessmentId: 'f3' },
+    ],
+    createdBy: 'u5', createdAt: '2026-02-25T08:00:00Z',
+  },
+]
+
+// ── Skill Test Methods ──
+export const skillTestMethods: SkillTestMethod[] = [
+  {
+    id: 'st1', title: 'Skill Test - Praktek Lapangan',
+    description: 'Ujian praktek keterampilan di lapangan (min 3 attempts)',
+    categories: [
+      { id: 'sc1', name: 'Ketepatan Prosedur', weight: 40, formAssessmentId: 'f4' },
+      { id: 'sc2', name: 'Kecepatan & Kualitas', weight: 60, formAssessmentId: 'f4' },
+    ],
+    minAttempts: 3,
+    createdBy: 'u5', createdAt: '2026-03-01T08:00:00Z',
+  },
+]
+
+// ── Verify Methods ──
+export const verifyMethods: VerifyMethod[] = [
+  {
+    id: 'vr1', title: 'Verifikasi Akhir - Q&A',
+    description: 'Sesi tanya jawab final verifikasi kompetensi',
+    categories: [
+      { id: 'rc1', name: 'Pengetahuan Teknis', weight: 50, formAssessmentId: 'f5' },
+      { id: 'rc2', name: 'Sikap & Profesionalisme', weight: 50, formAssessmentId: 'f5' },
+    ],
+    createdBy: 'u5', createdAt: '2026-03-05T08:00:00Z',
+  },
+]
+
+// ── Accounting Methods ──
+export const accountingMethods: AccountingMethod[] = [
+  {
+    id: 'ac1', title: 'Accounting Case Study',
+    description: 'Studi kasus akuntansi dengan soal essay',
+    categories: [
+      { id: 'acc1', name: 'Analisis Laporan', weight: 40, testId: 't4' },
+      { id: 'acc2', name: 'Jurnal & Penyesuaian', weight: 60, testId: 't4' },
+    ],
+    createdBy: 'u5', createdAt: '2026-03-01T08:00:00Z',
+  },
+]
+
+// ── Knowledge Test Classes (screening) ──
+export const knowledgeTestClasses: KnowledgeTestClass[] = [
+  {
+    id: 'kt1', name: 'Knowledge Test - Pelayanan Prima', testId: 't3',
+    passingScore: 70, maxParticipants: 200,
+    participants: ['u1', 'u6', 'u7', 'u8', 'u9', 'u10', 'u14', 'u15'],
+    createdBy: 'u5', createdAt: '2026-02-01T08:00:00Z',
+  },
+]
+
+// ── Curricula ──
+export const curricula: Curriculum[] = [
+  {
+    id: 'c1', title: 'Program Frontliner Excellence',
+    description: 'Program pengembangan frontliner - mulai dari screening hingga verifikasi',
+    programCategory: 'Operasional',
+    passingThreshold: 75,
+    immutable: true,
+    items: [
+      { id: 'ci1', order: 1, trainingMethodType: 'inClass', contentId: 'ic1', weight: 20, passingScore: 70 },
+      { id: 'ci2', order: 2, trainingMethodType: 'inClass', contentId: 'ic2', weight: 20, passingScore: 70 },
+      { id: 'ci3', order: 3, trainingMethodType: 'presentation', contentId: 'pr1', weight: 15, passingScore: 70 },
+      { id: 'ci4', order: 4, trainingMethodType: 'multirater', contentId: 'mr1', weight: 15, passingScore: 70 },
+      { id: 'ci5', order: 5, trainingMethodType: 'skillTest', contentId: 'st1', weight: 10, passingScore: 65 },
+      { id: 'ci6', order: 6, trainingMethodType: 'validation', contentId: 'vl1', weight: 10, passingScore: 70 },
+      { id: 'ci7', order: 7, trainingMethodType: 'verify', contentId: 'vr1', weight: 5, passingScore: 75 },
+      { id: 'ci8', order: 8, trainingMethodType: 'accounting', contentId: 'ac1', weight: 5, passingScore: 70 },
+    ],
+    createdBy: 'u5', createdAt: '2026-03-10T08:00:00Z',
+  },
+]
+
+// ── Classes ──
+export const classes: Class[] = [
+  {
+    id: 'cl1', name: 'Frontliner Angkatan 1 - Reguler A',
+    curriculumId: 'c1',
+    knowledgeTestClassId: 'kt1',
+    instructorId: 'u2',
+    startDate: '2026-03-15', endDate: '2026-05-15',
+    status: 'active',
+    participants: ['u1', 'u6', 'u7'],
+    raters: ['u3', 'u11'],
+    inClassInstructorAssignments: [
+      { trainingMethodId: 'ci1', inClassId: 'ic1', categoryId: 'cat1', materiId: 'm1', instructorId: 'u2' },
+      { trainingMethodId: 'ci1', inClassId: 'ic1', categoryId: 'cat1', materiId: 'm2', instructorId: 'u13' },
+      { trainingMethodId: 'ci1', inClassId: 'ic1', categoryId: 'cat2', materiId: 'm3', instructorId: 'u2' },
+      { trainingMethodId: 'ci1', inClassId: 'ic1', categoryId: 'cat2', materiId: 'm4', instructorId: 'u13' },
+      { trainingMethodId: 'ci2', inClassId: 'ic2', categoryId: 'cat3', materiId: 'm1', instructorId: 'u2' },
+      { trainingMethodId: 'ci2', inClassId: 'ic2', categoryId: 'cat4', materiId: 'm2', instructorId: 'u13' },
+      { trainingMethodId: 'ci2', inClassId: 'ic2', categoryId: 'cat4', materiId: 'm3', instructorId: 'u13' },
+    ],
+    assessmentAssessorAssignments: [
+      { trainingMethodId: 'ci3', participantId: 'u1', raterIds: ['u3'] },
+      { trainingMethodId: 'ci3', participantId: 'u6', raterIds: ['u11'] },
+      { trainingMethodId: 'ci3', participantId: 'u7', raterIds: ['u3', 'u11'] },
+      { trainingMethodId: 'ci4', participantId: 'u1', raterIds: ['u3', 'u11'] },
+      { trainingMethodId: 'ci4', participantId: 'u6', raterIds: ['u11'] },
+      { trainingMethodId: 'ci4', participantId: 'u7', raterIds: ['u3'] },
+    ],
+    createdBy: 'u5', createdAt: '2026-03-12T08:00:00Z',
+  },
+  {
+    id: 'cl2', name: 'Frontliner Angkatan 1 - Reguler B',
+    curriculumId: 'c1',
+    knowledgeTestClassId: 'kt1',
+    instructorId: 'u13',
+    startDate: '2026-03-15', endDate: '2026-05-15',
+    status: 'active',
+    participants: ['u8', 'u9', 'u10'],
+    raters: ['u3', 'u12'],
+    createdBy: 'u5', createdAt: '2026-03-12T08:00:00Z',
+  },
+  {
+    id: 'cl3', name: 'Frontliner Angkatan 2 - Reguler A',
+    curriculumId: 'c1',
+    knowledgeTestClassId: 'kt1',
+    instructorId: 'u2',
+    startDate: '2026-04-01', endDate: '2026-06-01',
+    status: 'active',
+    participants: ['u14', 'u15'],
+    raters: ['u11', 'u12'],
+    createdBy: 'u5', createdAt: '2026-03-20T08:00:00Z',
+  },
+]
+
+// ── Test Attempts ──
+export const testAttempts: TestAttempt[] = [
+  {
+    id: 'ta1', testId: 't1', participantId: 'u1', classId: 'cl1',
+    answers: [
+      { questionId: 'q1', value: 'q1a' }, { questionId: 'q2', value: 'q2b' },
+      { questionId: 'q3', value: 'Hambatan: perbedaan persepsi, gangguan fisik, hambatan bahasa' },
+      { questionId: 'q4', value: 'verbal' },
+      { questionId: 'q5', value: ['q5b', 'q5a', 'q5c'] },
+    ],
+    score: 65, totalPoints: 65, normalizedScore: 85,
+    startedAt: '2026-03-20T09:00:00Z', completedAt: '2026-03-20T09:25:00Z', status: 'completed',
+  },
+  {
+    id: 'ta2', testId: 't3', participantId: 'u1', classId: 'kt1',
+    answers: [
+      { questionId: 'q9', value: 'q9a' }, { questionId: 'q10', value: 'q10a' },
+      { questionId: 'q11', value: '5 prinsip: Tanggap, Ramah, Profesional, Cepat, Tepat' },
+      { questionId: 'q12', value: 'pelanggan' },
+    ],
+    score: 60, totalPoints: 60, normalizedScore: 80,
+    startedAt: '2026-02-05T09:00:00Z', completedAt: '2026-02-05T09:40:00Z', status: 'completed',
+  },
+  {
+    id: 'ta3', testId: 't3', participantId: 'u6', classId: 'kt1',
+    answers: [
+      { questionId: 'q9', value: 'q9a' }, { questionId: 'q10', value: 'q10a' },
+      { questionId: 'q11', value: 'Pelayanan prima adalah...' },
+      { questionId: 'q12', value: 'pelanggan' },
+    ],
+    score: 35, totalPoints: 60, normalizedScore: 58,
+    startedAt: '2026-02-05T09:00:00Z', completedAt: '2026-02-05T09:35:00Z', status: 'completed',
+  },
+]
+
+// ── Assessments (Form-based) ──
+export const assessments: Assessment[] = [
+  {
+    id: 'a1', classId: 'cl1', trainingMethodId: 'ci3', methodEntityId: 'pr1', categoryId: 'pc1',
+    raterId: 'u3', participantId: 'u1',
+    formAssessmentId: 'f2',
+    scores: [
+      { fieldId: 'ff6', value: 4 }, { fieldId: 'ff7', value: 3 },
+      { fieldId: 'ff8', value: 4 }, { fieldId: 'ff9', value: 'Materi bagus, penyampaian perlu ditingkatkan' },
+    ],
+    notes: 'Overall good', normalizedScore: 75,
+    createdAt: '2026-04-01T08:00:00Z', completedAt: '2026-04-01T09:00:00Z',
+  },
+  {
+    id: 'a2', classId: 'cl1', trainingMethodId: 'ci4', methodEntityId: 'mr1', categoryId: 'mc1',
+    raterId: 'u3', participantId: 'u1',
+    formAssessmentId: 'f1',
+    scores: [
+      { fieldId: 'ff1', value: 4 }, { fieldId: 'ff2', value: 3 },
+      { fieldId: 'ff3', value: 4 }, { fieldId: 'ff4', value: 'Sesuai' },
+      { fieldId: 'ff5', value: 'Performa baik' },
+    ],
+    notes: '', normalizedScore: 78,
+    createdAt: '2026-04-05T08:00:00Z',
+  },
+]
+
+// ── LGI ──
+export const lgis: LGI[] = [
+  { participantId: 'u1', inClassId: 'ic1', preTestScore: 45, postTestScore: 82, lgiValue: 0.67 },
+  { participantId: 'u6', inClassId: 'ic1', preTestScore: 30, postTestScore: 65, lgiValue: 0.50 },
+  { participantId: 'u7', inClassId: 'ic1', preTestScore: 55, postTestScore: 90, lgiValue: 0.78 },
+]
+
+// ── Participant Progress ──
+export const participantProgress: ParticipantProgress[] = [
+  { participantId: 'u1', classId: 'cl1', methodId: 'ci1', methodType: 'inClass', status: 'completed', score: 85 },
+  { participantId: 'u1', classId: 'cl1', methodId: 'ci2', methodType: 'inClass', status: 'inProgress' },
+  { participantId: 'u1', classId: 'cl1', methodId: 'ci3', methodType: 'presentation', status: 'completed', score: 75 },
+  { participantId: 'u1', classId: 'cl1', methodId: 'ci4', methodType: 'multirater', status: 'inProgress' },
+  { participantId: 'u6', classId: 'cl1', methodId: 'ci1', methodType: 'inClass', status: 'failed', score: 45 },
+]
+
+// ── Remedials ──
+export const remedials: Remedial[] = [
+  { id: 'r1', participantId: 'u6', classId: 'cl1', trainingMethodId: 'ci1', methodType: 'inClass', status: 'assigned', assignedAt: '2026-03-25T08:00:00Z' },
+]
+
+// ── Audit Logs ──
+export const auditLogs: AuditLogEntry[] = [
+  { id: 'al1', userId: 'u5', userName: 'Admin User', userRole: 'admin', action: 'CREATE', resource: 'FormAssessment', resourceId: 'f1', details: 'Membuat form multirater', timestamp: '2026-02-15T08:00:00Z' },
+  { id: 'al2', userId: 'u5', userName: 'Admin User', userRole: 'admin', action: 'CREATE', resource: 'Curriculum', resourceId: 'c1', details: 'Membuat kurikulum Frontliner', timestamp: '2026-03-10T08:00:00Z' },
+  { id: 'al3', userId: 'u5', userName: 'Admin User', userRole: 'admin', action: 'CREATE', resource: 'Class', resourceId: 'cl1', details: 'Membuat kelas reguler A', timestamp: '2026-03-12T08:00:00Z' },
+  { id: 'al4', userId: 'u1', userName: 'Budi Santoso', userRole: 'participant', action: 'SUBMIT', resource: 'TestAttempt', resourceId: 'ta1', details: 'Mengirimkan jawaban pretest', timestamp: '2026-03-20T09:25:00Z' },
+]
