@@ -34,8 +34,8 @@ const raters = ref<string[]>(existing?.raters ?? [])
 const inClassInstructorAssignments = ref(existing?.inClassInstructorAssignments ?? [])
 const assessmentAssessorAssignments = ref(existing?.assessmentAssessorAssignments ?? [])
 
-const categoryClass = ref<'talent-diagnostic' | 'regular'>(
-  isEdit ? (existing?.curriculumId ? 'regular' : 'talent-diagnostic') : 'regular'
+const categoryClass = ref<'assessment-test' | 'regular'>(
+  isEdit ? (existing?.curriculumId ? 'regular' : 'assessment-test') : 'regular'
 )
 
 const assessorSearchQueries = ref<Record<string, string>>({})
@@ -163,8 +163,8 @@ function save() { alert('Class saved (mock)'); router.push('/admin/classes') }
       <div><label class="block text-sm font-medium mb-1">Category Class</label>
         <div class="flex gap-4">
           <label class="flex items-center gap-2 text-sm">
-            <input type="radio" v-model="categoryClass" value="talent-diagnostic" :disabled="isEdit" />
-            Talent Diagnostic
+            <input type="radio" v-model="categoryClass" value="assessment-test" :disabled="isEdit" />
+            Assessment Test
           </label>
           <label class="flex items-center gap-2 text-sm">
             <input type="radio" v-model="categoryClass" value="regular" :disabled="isEdit" />
