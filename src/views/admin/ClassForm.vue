@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
+  accountingMethods,
   classes,
   curricula,
   inClasses,
@@ -33,11 +34,60 @@ const raters = ref<string[]>(existing?.raters ?? [])
 const inClassInstructorAssignments = ref(existing?.inClassInstructorAssignments ?? [])
 const assessmentAssessorAssignments = ref(existing?.assessmentAssessorAssignments ?? [])
 
+const categoryClass = ref<'knowledge-test' | 'regular'>(
+  isEdit ? (existing?.curriculumId ? 'regular' : 'knowledge-test') : 'regular'
+)
+
+watch(categoryClass, (val) => {
+  if (val === 'knowledge-test') curriculumId.value = ''
+})
+
+const assessorSearchQueries = ref<Record<string, string>>({})
+
+function getAssessorSearchKey(trainingMethodId: string, participantId: string) {
+  return `${trainingMethodId}_${participantId}`
+}
+
+function updateAssessorSearch(trainingMethodId: string, participantId: string, query: string) {
+  assessorSearchQueries.value[getAssessorSearchKey(trainingMethodId, participantId)] = query
+}
+
+function getFilteredRaters(query: string) {
+  if (!query.trim()) return []
+  const q = query.toLowerCase()
+  return raterPool.filter(
+    u => u.name.toLowerCase().includes(q) || (u.nip ?? '').toLowerCase().includes(q)
+  )
+}
+
+function addAssessor(trainingMethodId: string, participantId: string, raterId: string) {
+  let assignment = assessmentAssessorAssignments.value.find(
+    a => a.trainingMethodId === trainingMethodId && a.participantId === participantId
+  )
+  if (!assignment) {
+    assignment = { trainingMethodId, participantId, raterIds: [] }
+    assessmentAssessorAssignments.value.push(assignment)
+  }
+  if (!assignment.raterIds.includes(raterId)) {
+    assignment.raterIds.push(raterId)
+  }
+}
+
+function removeAssessor(trainingMethodId: string, participantId: string, raterId: string) {
+  const assignment = assessmentAssessorAssignments.value.find(
+    a => a.trainingMethodId === trainingMethodId && a.participantId === participantId
+  )
+  if (assignment) {
+    const idx = assignment.raterIds.indexOf(raterId)
+    if (idx >= 0) assignment.raterIds.splice(idx, 1)
+  }
+}
+
 const instructors = allUsers.filter(u => u.role === 'instructor')
 const participantPool = allUsers.filter(u => u.role === 'participant')
 const raterPool = allUsers.filter(u => u.role === 'rater')
 const selectedCurriculum = computed(() => curricula.find(c => c.id === curriculumId.value))
-const formAssessmentTypes = ['multirater', 'presentation', 'validation', 'skillTest', 'verify']
+const formAssessmentTypes = ['multirater', 'presentation', 'validation', 'skillTest', 'verify', 'accounting']
 
 function toggleParticipant(id: string) {
   const idx = participants.value.indexOf(id)
@@ -55,6 +105,7 @@ function getMethodTitle(type: string, contentId: string) {
   if (type === 'validation') return validationMethods.find(m => m.id === contentId)?.title
   if (type === 'skillTest') return skillTestMethods.find(m => m.id === contentId)?.title
   if (type === 'verify') return verifyMethods.find(m => m.id === contentId)?.title
+  if (type === 'accounting') return accountingMethods.find(m => m.id === contentId)?.title
   return contentId
 }
 
@@ -113,19 +164,34 @@ function save() { alert('Class saved (mock)'); router.push('/admin/classes') }
           </select>
         </div>
       </div>
-      <div><label class="block text-sm font-medium mb-1">Curriculum (locks after save)</label>
+      <div><label class="block text-sm font-medium mb-1">Category Class</label>
+        <div class="flex gap-4">
+          <label class="flex items-center gap-2 text-sm">
+            <input type="radio" v-model="categoryClass" value="knowledge-test" :disabled="isEdit" />
+            Knowledge Test
+          </label>
+          <label class="flex items-center gap-2 text-sm">
+            <input type="radio" v-model="categoryClass" value="regular" :disabled="isEdit" />
+            Regular
+          </label>
+        </div>
+      </div>
+      <div v-if="categoryClass === 'regular'"><label class="block text-sm font-medium mb-1">Curriculum (locks after save)</label>
         <select v-model="curriculumId" class="w-full border rounded px-3 py-2" :disabled="isEdit">
           <option value="">-- Select --</option><option v-for="c in curricula" :key="c.id" :value="c.id">{{ c.title }}</option>
         </select>
         <p v-if="isEdit" class="text-xs text-gray-400 mt-1">Curriculum is immutable once class is created.</p>
       </div>
       <div class="grid grid-cols-2 gap-4">
-        <div><label class="block text-sm font-medium mb-1">Knowledge Test (optional)</label>
+        <div><label class="block text-sm font-medium mb-1">
+          <template v-if="categoryClass === 'knowledge-test'">Knowledge Test</template>
+          <template v-else>Knowledge Test Class <span class="text-gray-400">(optional)</span></template>
+        </label>
           <select v-model="knowledgeTestClassId" class="w-full border rounded px-3 py-2">
             <option value="">-- None --</option><option v-for="kt in knowledgeTestClasses" :key="kt.id" :value="kt.id">{{ kt.name }}</option>
           </select>
         </div>
-        <div><label class="block text-sm font-medium mb-1">Default Instructor</label>
+        <div v-if="categoryClass === 'regular'"><label class="block text-sm font-medium mb-1">Default Instructor</label>
           <select v-model="instructorId" class="w-full border rounded px-3 py-2">
             <option value="">-- Select --</option><option v-for="inst in instructors" :key="inst.id" :value="inst.id">{{ inst.name }}</option>
           </select>
@@ -144,7 +210,7 @@ function save() { alert('Class saved (mock)'); router.push('/admin/classes') }
           </div>
         </div>
       </div>
-      <div>
+      <div v-if="categoryClass === 'regular'">
         <label class="block text-sm font-medium mb-2">Default Raters</label>
         <div class="border rounded max-h-40 overflow-y-auto p-2 space-y-1">
           <div v-for="r in raterPool" :key="r.id" class="flex items-center gap-2">
@@ -153,7 +219,7 @@ function save() { alert('Class saved (mock)'); router.push('/admin/classes') }
           </div>
         </div>
       </div>
-      <div>
+      <div v-if="categoryClass === 'regular'">
         <label class="block text-sm font-medium mb-2">Training Journey Assignments</label>
         <div v-if="!selectedCurriculum" class="border rounded p-4 text-sm text-gray-400">Select a curriculum to configure assignments.</div>
         <div v-else class="space-y-4">
@@ -186,11 +252,40 @@ function save() { alert('Class saved (mock)'); router.push('/admin/classes') }
             <div v-else-if="formAssessmentTypes.includes(item.trainingMethodType)" class="space-y-3">
               <div v-for="pid in participants" :key="pid" class="bg-gray-50 rounded p-3">
                 <p class="text-sm font-medium mb-2">{{ allUsers.find(u => u.id === pid)?.name ?? pid }}</p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <label v-for="rater in raterPool" :key="rater.id" class="text-sm flex items-center gap-2">
-                    <input type="checkbox" :checked="assignedRaterIds(item.id, pid).includes(rater.id)" @change="toggleAssessor(item.id, pid, rater.id)" />
-                    {{ rater.name }}
-                  </label>
+                <div class="space-y-2">
+                  <div class="relative">
+                    <input
+                      :value="assessorSearchQueries[getAssessorSearchKey(item.id, pid)] ?? ''"
+                      @input="updateAssessorSearch(item.id, pid, ($event.target as HTMLInputElement).value)"
+                      placeholder="Search assessor by name or NIP..."
+                      class="w-full border rounded px-3 py-1.5 text-sm"
+                    />
+                    <div
+                      v-if="(assessorSearchQueries[getAssessorSearchKey(item.id, pid)] ?? '').trim()"
+                      class="absolute z-10 top-full left-0 right-0 bg-white border rounded mt-1 shadow max-h-40 overflow-y-auto"
+                    >
+                      <button
+                        v-for="r in getFilteredRaters(assessorSearchQueries[getAssessorSearchKey(item.id, pid)] ?? '')"
+                        :key="r.id"
+                        @click="addAssessor(item.id, pid, r.id); updateAssessorSearch(item.id, pid, '')"
+                        class="w-full text-left px-3 py-1.5 text-sm hover:bg-blue-50"
+                      >
+                        <span>{{ r.name }}</span>
+                        <span v-if="r.nip" class="text-gray-400 ml-2">({{ r.nip }})</span>
+                      </button>
+                      <p v-if="getFilteredRaters(assessorSearchQueries[getAssessorSearchKey(item.id, pid)] ?? '').length === 0" class="px-3 py-1.5 text-sm text-gray-400">No matching assessors</p>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <span
+                      v-for="raterId in assignedRaterIds(item.id, pid)"
+                      :key="raterId"
+                      class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded"
+                    >
+                      {{ allUsers.find(u => u.id === raterId)?.name ?? raterId }}
+                      <button @click="removeAssessor(item.id, pid, raterId)" class="text-blue-600 hover:text-blue-800">&times;</button>
+                    </span>
+                  </div>
                 </div>
               </div>
               <p v-if="participants.length === 0" class="text-sm text-gray-400">Select participants before assigning assessors.</p>

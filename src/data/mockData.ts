@@ -9,21 +9,21 @@ import type {
 
 // ── Users (5 roles) ──
 export const users: User[] = [
-  { id: 'u1', email: 'budi@gacoan.id', password: 'password123', name: 'Budi Santoso', role: 'participant' },
-  { id: 'u2', email: 'ani@gacoan.id', password: 'password123', name: 'Ani Rahmawati', role: 'instructor' },
-  { id: 'u3', email: 'hendra@gacoan.id', password: 'password123', name: 'Hendra Gunawan', role: 'rater' },
-  { id: 'u4', email: 'ibu_siti@gacoan.id', password: 'password123', name: 'Ibu Siti', role: 'supervisor' },
-  { id: 'u5', email: 'admin@gacoan.id', password: 'password123', name: 'Admin User', role: 'admin' },
-  { id: 'u6', email: 'rina@gacoan.id', password: 'password123', name: 'Rina Wijaya', role: 'participant' },
-  { id: 'u7', email: 'doni@gacoan.id', password: 'password123', name: 'Doni Prasetyo', role: 'participant' },
-  { id: 'u8', email: 'sari@gacoan.id', password: 'password123', name: 'Sari Dewi', role: 'participant' },
-  { id: 'u9', email: 'agung@gacoan.id', password: 'password123', name: 'Agung Hidayat', role: 'participant' },
-  { id: 'u10', email: 'dian@gacoan.id', password: 'password123', name: 'Dian Permata', role: 'participant' },
-  { id: 'u11', email: 'rudi@gacoan.id', password: 'password123', name: 'Rudi Hartono', role: 'rater' },
-  { id: 'u12', email: 'maya@gacoan.id', password: 'password123', name: 'Maya Indah', role: 'rater' },
-  { id: 'u13', email: 'bambang@gacoan.id', password: 'password123', name: 'Bambang Sutejo', role: 'instructor' },
-  { id: 'u14', email: 'citra@gacoan.id', password: 'password123', name: 'Citra Lestari', role: 'participant' },
-  { id: 'u15', email: 'eko@gacoan.id', password: 'password123', name: 'Eko Prasetyo', role: 'participant' },
+  { id: 'u1', nip: '199001012010011001', email: 'budi@gacoan.id', password: 'password123', name: 'Budi Santoso', role: 'participant' },
+  { id: 'u2', nip: '199102022011012002', email: 'ani@gacoan.id', password: 'password123', name: 'Ani Rahmawati', role: 'instructor' },
+  { id: 'u3', nip: '198503052009031003', email: 'hendra@gacoan.id', password: 'password123', name: 'Hendra Gunawan', role: 'rater' },
+  { id: 'u4', nip: '197807062006042004', email: 'ibu_siti@gacoan.id', password: 'password123', name: 'Ibu Siti', role: 'supervisor' },
+  { id: 'u5', nip: '198901072007011005', email: 'admin@gacoan.id', password: 'password123', name: 'Admin User', role: 'admin' },
+  { id: 'u6', nip: '200001082020012006', email: 'rina@gacoan.id', password: 'password123', name: 'Rina Wijaya', role: 'participant' },
+  { id: 'u7', nip: '200002092020022007', email: 'doni@gacoan.id', password: 'password123', name: 'Doni Prasetyo', role: 'participant' },
+  { id: 'u8', nip: '199803102018032008', email: 'sari@gacoan.id', password: 'password123', name: 'Sari Dewi', role: 'participant' },
+  { id: 'u9', nip: '199704112017042009', email: 'agung@gacoan.id', password: 'password123', name: 'Agung Hidayat', role: 'participant' },
+  { id: 'u10', nip: '199605122016052010', email: 'dian@gacoan.id', password: 'password123', name: 'Dian Permata', role: 'participant' },
+  { id: 'u11', nip: '198212132007061011', email: 'rudi@gacoan.id', password: 'password123', name: 'Rudi Hartono', role: 'rater' },
+  { id: 'u12', nip: '199012142010071012', email: 'maya@gacoan.id', password: 'password123', name: 'Maya Indah', role: 'rater' },
+  { id: 'u13', nip: '198709152008081013', email: 'bambang@gacoan.id', password: 'password123', name: 'Bambang Sutejo', role: 'instructor' },
+  { id: 'u14', nip: '199812162019092014', email: 'citra@gacoan.id', password: 'password123', name: 'Citra Lestari', role: 'participant' },
+  { id: 'u15', nip: '199901172020102015', email: 'eko@gacoan.id', password: 'password123', name: 'Eko Prasetyo', role: 'participant' },
 ]
 
 // ── Tests ──

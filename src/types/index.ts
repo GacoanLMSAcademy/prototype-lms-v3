@@ -2,6 +2,7 @@ export type Role = 'participant' | 'instructor' | 'rater' | 'supervisor' | 'admi
 
 export interface User {
   id: string
+  nip?: string
   email: string
   password: string
   name: string
