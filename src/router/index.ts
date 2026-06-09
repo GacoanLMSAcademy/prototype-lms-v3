@@ -50,6 +50,7 @@ const routes = [
       { path: 'curriculum/:id', name: 'admin-curriculum-edit', component: () => import('@/views/admin/CurriculumForm.vue') },
       { path: 'classes', name: 'admin-classes', component: () => import('@/views/admin/ClassList.vue') },
       { path: 'classes/new', name: 'admin-class-new', component: () => import('@/views/admin/ClassForm.vue') },
+      { path: 'classes/:id/edit', name: 'admin-class-edit', component: () => import('@/views/admin/ClassForm.vue') },
       { path: 'classes/:id', name: 'admin-class-detail', component: () => import('@/views/admin/ClassDetail.vue') },
       { path: 'knowledge-tests', name: 'admin-knowledge-tests', component: () => import('@/views/admin/KnowledgeTestList.vue') },
       { path: 'knowledge-tests/new', name: 'admin-knowledge-test-new', component: () => import('@/views/admin/KnowledgeTestForm.vue') },
