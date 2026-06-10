@@ -8,6 +8,7 @@ import {
   validationMethods,
   skillTestMethods,
   verifyMethods,
+  accountingMethods,
 } from '@/data/mockData'
 import type { TechnicalTestItem, FormBasedMethodType } from '@/types'
 
@@ -29,6 +30,7 @@ const formBasedTypes: { value: FormBasedMethodType; label: string; contentLabel:
   { value: 'validation', label: 'Validation', contentLabel: 'Validation Method' },
   { value: 'skillTest', label: 'Skill Test', contentLabel: 'Skill Test Method' },
   { value: 'verify', label: 'Verify', contentLabel: 'Verify Method' },
+  { value: 'accounting', label: 'Accounting', contentLabel: 'Accounting Method' },
 ]
 
 function getContentList(type: FormBasedMethodType) {
@@ -37,6 +39,7 @@ function getContentList(type: FormBasedMethodType) {
   if (type === 'validation') return validationMethods.map((m) => ({ id: m.id, title: m.title }))
   if (type === 'skillTest') return skillTestMethods.map((m) => ({ id: m.id, title: m.title }))
   if (type === 'verify') return verifyMethods.map((m) => ({ id: m.id, title: m.title }))
+  if (type === 'accounting') return accountingMethods.map((m) => ({ id: m.id, title: m.title }))
   return []
 }
 

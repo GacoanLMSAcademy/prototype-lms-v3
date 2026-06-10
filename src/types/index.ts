@@ -186,7 +186,7 @@ export type TrainingMethodType =
   | 'accounting'
   | 'technicalTest'
 
-export type FormBasedMethodType = Extract<TrainingMethodType, 'multirater' | 'presentation' | 'validation' | 'skillTest' | 'verify'>
+export type FormBasedMethodType = Extract<TrainingMethodType, 'multirater' | 'presentation' | 'validation' | 'skillTest' | 'verify' | 'accounting'>
 
 export interface TechnicalTestItem {
   id: string
