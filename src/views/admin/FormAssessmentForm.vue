@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formAssessments } from '@/data/mockData'
 import type { FormField, FormFieldType } from '@/types'
@@ -12,6 +12,9 @@ const existing = isEdit ? formAssessments.find(f => f.id === route.params.id) : 
 const title = ref(existing?.title ?? '')
 const description = ref(existing?.description ?? '')
 const fields = ref<FormField[]>(existing?.fields ?? [])
+
+const totalWeight = computed(() => fields.value.reduce((s, f) => s + f.points, 0))
+const weightValid = computed(() => totalWeight.value === 100 && fields.value.length > 0)
 
 function addField(type: FormFieldType) {
   const field: FormField = { id: 'ff' + Date.now(), type, label: '', required: false, points: 10 }
@@ -45,6 +48,14 @@ function cloneForm() {
 }
 
 function save() {
+  if (!weightValid.value) {
+    alert('Total field points must equal 100%')
+    return
+  }
+  if (fields.value.length === 0) {
+    alert('At least one field is required')
+    return
+  }
   alert('Form saved (mock)')
   router.push('/admin/form-builder')
 }
@@ -80,7 +91,7 @@ function save() {
           </div>
           <div class="grid grid-cols-2 gap-3 mb-2">
             <div class="col-span-2"><label class="text-xs">Label</label><input v-model="f.label" class="w-full border rounded px-2 py-1 text-sm" placeholder="Field label"/></div>
-            <div><label class="text-xs">Points</label><input v-model.number="f.points" type="number" class="w-full border rounded px-2 py-1 text-sm"/></div>
+            <div><label class="text-xs">Weight (%)</label><input v-model.number="f.points" type="number" class="w-full border rounded px-2 py-1 text-sm"/></div>
             <div><label class="text-xs"><input type="checkbox" v-model="f.required" class="accent-blue-600 mr-1"/> Required</label></div>
           </div>
           <div v-if="f.type === 'mcq' && f.options">
@@ -100,8 +111,13 @@ function save() {
             <div><label class="text-xs">Max</label><input v-model.number="f.ratingMax" type="number" class="w-full border rounded px-2 py-1 text-sm"/></div>
           </div>
         </div>
+        <div class="text-sm font-medium mt-2">
+          Total Field Points: {{ totalWeight }}%
+          <span v-if="totalWeight !== 100" class="text-red-500">(must be 100%)</span>
+          <span v-else class="text-green-600">✓</span>
+        </div>
       </div>
-      <button @click="save" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Save Form</button>
+      <button @click="save" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700" :disabled="!weightValid">Save Form</button>
     </div>
   </div>
 </template>
