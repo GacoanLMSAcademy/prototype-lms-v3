@@ -5,6 +5,7 @@ import type {
   Remedial, AuditLogEntry,
   MultiraterMethod, PresentationMethod, ValidationMethod,
   SkillTestMethod, VerifyMethod, AccountingMethod,
+  TechnicalTestMethod,
 } from '@/types'
 
 // ── Users (5 roles) ──
@@ -267,6 +268,31 @@ export const accountingMethods: AccountingMethod[] = [
       { id: 'acc2', name: 'Jurnal & Penyesuaian', weight: 60, testId: 't4' },
     ],
     createdBy: 'u5', createdAt: '2026-03-01T08:00:00Z',
+  },
+]
+
+// ── Technical Test Methods ──
+export const technicalTestMethods: TechnicalTestMethod[] = [
+  {
+    id: 'tt1', title: 'Technical Test - Frontliner',
+    description: 'Technical test menggabungkan multirater, presentasi, dan validasi untuk frontliner',
+    categories: [
+      {
+        id: 'ttc1', name: 'Komunikasi & Service', weight: 50,
+        items: [
+          { id: 'tti1', order: 1, trainingMethodType: 'multirater', contentId: 'mr1', weight: 60, passingScore: 70 },
+          { id: 'tti2', order: 2, trainingMethodType: 'presentation', contentId: 'pr1', weight: 40, passingScore: 70 },
+        ],
+      },
+      {
+        id: 'ttc2', name: 'Teknis Lapangan', weight: 50,
+        items: [
+          { id: 'tti3', order: 1, trainingMethodType: 'skillTest', contentId: 'st1', weight: 50, passingScore: 65 },
+          { id: 'tti4', order: 2, trainingMethodType: 'validation', contentId: 'vl1', weight: 50, passingScore: 70 },
+        ],
+      },
+    ],
+    createdBy: 'u5', createdAt: '2026-04-01T08:00:00Z',
   },
 ]
 

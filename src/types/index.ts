@@ -184,6 +184,34 @@ export type TrainingMethodType =
   | 'skillTest'
   | 'verify'
   | 'accounting'
+  | 'technicalTest'
+
+export type FormBasedMethodType = Extract<TrainingMethodType, 'multirater' | 'presentation' | 'validation' | 'skillTest' | 'verify'>
+
+export interface TechnicalTestItem {
+  id: string
+  order: number
+  trainingMethodType: FormBasedMethodType
+  contentId: string
+  weight: number
+  passingScore: number
+}
+
+export interface TechnicalTestCategory {
+  id: string
+  name: string
+  weight: number
+  items: TechnicalTestItem[]
+}
+
+export interface TechnicalTestMethod {
+  id: string
+  title: string
+  description: string
+  categories: TechnicalTestCategory[]
+  createdBy: string
+  createdAt: string
+}
 
 // ── Curriculum ──
 export interface CurriculumItem {
