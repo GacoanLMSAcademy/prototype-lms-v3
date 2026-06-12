@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   accountingMethods,
@@ -34,13 +34,9 @@ const raters = ref<string[]>(existing?.raters ?? [])
 const inClassInstructorAssignments = ref(existing?.inClassInstructorAssignments ?? [])
 const assessmentAssessorAssignments = ref(existing?.assessmentAssessorAssignments ?? [])
 
-const categoryClass = ref<'knowledge-test' | 'regular'>(
-  isEdit ? (existing?.curriculumId ? 'regular' : 'knowledge-test') : 'regular'
+const categoryClass = ref<'assessment-test' | 'regular'>(
+  isEdit ? (existing?.curriculumId ? 'regular' : 'assessment-test') : 'regular'
 )
-
-watch(categoryClass, (val) => {
-  if (val === 'knowledge-test') curriculumId.value = ''
-})
 
 const assessorSearchQueries = ref<Record<string, string>>({})
 
@@ -167,8 +163,8 @@ function save() { alert('Class saved (mock)'); router.push('/admin/classes') }
       <div><label class="block text-sm font-medium mb-1">Category Class</label>
         <div class="flex gap-4">
           <label class="flex items-center gap-2 text-sm">
-            <input type="radio" v-model="categoryClass" value="knowledge-test" :disabled="isEdit" />
-            Knowledge Test
+            <input type="radio" v-model="categoryClass" value="assessment-test" :disabled="isEdit" />
+            Assessment Test
           </label>
           <label class="flex items-center gap-2 text-sm">
             <input type="radio" v-model="categoryClass" value="regular" :disabled="isEdit" />
@@ -176,22 +172,19 @@ function save() { alert('Class saved (mock)'); router.push('/admin/classes') }
           </label>
         </div>
       </div>
-      <div v-if="categoryClass === 'regular'"><label class="block text-sm font-medium mb-1">Curriculum (locks after save)</label>
+      <div><label class="block text-sm font-medium mb-1">Curriculum (locks after save)</label>
         <select v-model="curriculumId" class="w-full border rounded px-3 py-2" :disabled="isEdit">
           <option value="">-- Select --</option><option v-for="c in curricula" :key="c.id" :value="c.id">{{ c.title }}</option>
         </select>
         <p v-if="isEdit" class="text-xs text-gray-400 mt-1">Curriculum is immutable once class is created.</p>
       </div>
       <div class="grid grid-cols-2 gap-4">
-        <div><label class="block text-sm font-medium mb-1">
-          <template v-if="categoryClass === 'knowledge-test'">Knowledge Test</template>
-          <template v-else>Knowledge Test Class <span class="text-gray-400">(optional)</span></template>
-        </label>
+        <div v-if="categoryClass === 'regular'"><label class="block text-sm font-medium mb-1">Knowledge Test Class <span class="text-gray-400">(optional)</span></label>
           <select v-model="knowledgeTestClassId" class="w-full border rounded px-3 py-2">
             <option value="">-- None --</option><option v-for="kt in knowledgeTestClasses" :key="kt.id" :value="kt.id">{{ kt.name }}</option>
           </select>
         </div>
-        <div v-if="categoryClass === 'regular'"><label class="block text-sm font-medium mb-1">Default Instructor</label>
+        <div><label class="block text-sm font-medium mb-1">Default Instructor</label>
           <select v-model="instructorId" class="w-full border rounded px-3 py-2">
             <option value="">-- Select --</option><option v-for="inst in instructors" :key="inst.id" :value="inst.id">{{ inst.name }}</option>
           </select>
@@ -210,7 +203,7 @@ function save() { alert('Class saved (mock)'); router.push('/admin/classes') }
           </div>
         </div>
       </div>
-      <div v-if="categoryClass === 'regular'">
+      <div>
         <label class="block text-sm font-medium mb-2">Default Raters</label>
         <div class="border rounded max-h-40 overflow-y-auto p-2 space-y-1">
           <div v-for="r in raterPool" :key="r.id" class="flex items-center gap-2">
@@ -219,7 +212,7 @@ function save() { alert('Class saved (mock)'); router.push('/admin/classes') }
           </div>
         </div>
       </div>
-      <div v-if="categoryClass === 'regular'">
+      <div>
         <label class="block text-sm font-medium mb-2">Training Journey Assignments</label>
         <div v-if="!selectedCurriculum" class="border rounded p-4 text-sm text-gray-400">Select a curriculum to configure assignments.</div>
         <div v-else class="space-y-4">

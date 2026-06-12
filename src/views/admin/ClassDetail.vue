@@ -23,7 +23,7 @@ function raterNames(ids: string[]) {
   <div v-if="cls">
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-2xl font-bold">{{ cls.name }}</h2>
-      <button @click="router.push('/admin/classes/new')" class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Edit</button>
+      <button @click="router.push('/admin/classes/' + cls.id + '/edit')" class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Edit</button>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Curriculum</p><p class="font-medium">{{ curriculumDetail?.title ?? 'Not assigned' }}</p></div>

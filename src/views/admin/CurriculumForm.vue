@@ -29,7 +29,7 @@ const totalWeight = computed(() => items.value.reduce((s, i) => s + i.weight, 0)
 const valid = computed(() => totalWeight.value === 100 && items.value.length > 0)
 
 const methodTypes: { value: TrainingMethodType; label: string; contentLabel: string }[] = [
-  // { value: 'knowledgeTest', label: 'Knowledge Test', contentLabel: 'Test' },
+  { value: 'knowledgeTest', label: 'Knowledge Test', contentLabel: 'Test' },
   { value: 'inClass', label: 'In-Class', contentLabel: 'In-Class' },
   { value: 'multirater', label: 'Multirater', contentLabel: 'Multirater Method' },
   { value: 'presentation', label: 'Presentation', contentLabel: 'Presentation Method' },

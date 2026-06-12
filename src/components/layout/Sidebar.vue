@@ -31,6 +31,7 @@ const navItems = computed<MenuEntry[]>(() => {
           { label: 'Skill Test', to: '/admin/skill-test', icon: '⚡' },
           { label: 'Verify', to: '/admin/verify', icon: '🔍' },
           { label: 'Accounting', to: '/admin/accounting', icon: '💰' },
+          { label: 'Technical Test', to: '/admin/technical-test', icon: '🔧' },
         ],
       },
       { label: 'Curriculum', to: '/admin/curriculum', icon: '🎯' },
