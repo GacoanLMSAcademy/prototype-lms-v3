@@ -62,7 +62,14 @@ function save() {
           <div class="grid grid-cols-3 gap-3 mb-2">
             <div><label class="text-xs">Name</label><input v-model="cat.name" class="w-full border rounded px-2 py-1 text-sm" /></div>
             <div><label class="text-xs">Weight (%)</label><input v-model.number="cat.weight" type="number" class="w-full border rounded px-2 py-1 text-sm" /></div>
-            <div v-if="!(cat.components?.length)">
+            <div v-if="cat.components?.length">
+              <label class="text-xs">Training Method Category</label>
+              <select v-model="cat.typeId" class="w-full border rounded px-2 py-1 text-sm">
+                <option value="">-- Tag --</option>
+                <option v-for="t in trainingMethodTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
+              </select>
+            </div>
+            <div v-else>
               <label class="text-xs">Form Assessment</label>
               <select v-model="cat.formAssessmentId" class="w-full border rounded px-2 py-1 text-sm">
                 <option value="">-- Select --</option>
@@ -82,7 +89,7 @@ function save() {
                 <span class="text-xs font-medium">Component {{ cj + 1 }}</span>
                 <button @click="removeComponent(cat, cj)" class="text-red-500 text-xs">Remove</button>
               </div>
-              <div class="grid grid-cols-4 gap-2">
+              <div class="grid grid-cols-3 gap-2">
                 <div class="col-span-1">
                   <label class="text-xs">Method</label>
                   <select v-model="comp.contentId" class="w-full border rounded px-2 py-1 text-sm">
@@ -92,7 +99,6 @@ function save() {
                 </div>
                 <div><label class="text-xs">Weight (%)</label><input v-model.number="comp.weight" type="number" class="w-full border rounded px-2 py-1 text-sm" /></div>
                 <div><label class="text-xs">Passing Score</label><input v-model.number="comp.passingScore" type="number" class="w-full border rounded px-2 py-1 text-sm" /></div>
-                <div><label class="text-xs">File URL</label><input v-model="comp.fileUrl" class="w-full border rounded px-2 py-1 text-sm" placeholder="https://..." /></div>
               </div>
             </div>
           </div>

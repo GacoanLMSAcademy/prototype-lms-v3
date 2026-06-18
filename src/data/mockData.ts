@@ -774,14 +774,14 @@ export const trainingMethods: TrainingMethod[] = [
     categories: [
       {
         id: 'ttc1', name: 'Presentasi Slide', weight: 75,
-        formAssessmentId: '',
+        formAssessmentId: '', typeId: 'tmt4',
         components: [
-          { id: 'tc1', order: 1, weight: 100, passingScore: 70, contentId: 'pr1', fileUrl: 'https://docs.google.com/presentation/d/example1' },
+          { id: 'tc1', order: 1, weight: 100, passingScore: 70, contentId: 'pr1' },
         ],
       },
       {
         id: 'ttc2', name: 'Studi Kasus Akuntansi', weight: 25,
-        formAssessmentId: '',
+        formAssessmentId: '', typeId: 'tmt8',
         components: [
           { id: 'tc2', order: 1, weight: 100, passingScore: 70, contentId: 'ac1' },
         ],

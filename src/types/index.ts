@@ -86,7 +86,6 @@ export interface TrainingMethodComponent {
   weight: number
   passingScore: number
   contentId: string
-  fileUrl?: string
 }
 
 export interface MethodCategory {
@@ -94,6 +93,7 @@ export interface MethodCategory {
   name: string
   weight: number
   formAssessmentId: string
+  typeId?: string
   components?: TrainingMethodComponent[]
 }
 
