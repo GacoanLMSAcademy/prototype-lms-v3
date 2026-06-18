@@ -28,7 +28,7 @@ const pendingMethods = computed(() => {
           if (!forms.value.find(f => f.trainingMethodId + f.classId === key)) {
             forms.value.push({ trainingMethodId: item.id, classId: cls.id, fileUrl: '', description: '' })
           }
-          result.push({ methodId: item.id, methodTitle: component.title, className: cls.name, classId: cls.id })
+          result.push({ methodId: item.id, methodTitle: trainingMethods.find(m => m.id === comp.contentId)?.title ?? 'Unknown', className: cls.name, classId: cls.id })
         }
       })
     })
