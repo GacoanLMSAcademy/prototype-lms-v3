@@ -6,6 +6,7 @@ import type {
   FormAssessment,
   TrainingMethod,
   TrainingMethodType,
+  Submission,
   Curriculum,
   Class,
   KnowledgeTestClass,
@@ -765,6 +766,40 @@ export const trainingMethods: TrainingMethod[] = [
     createdBy: 'u5',
     createdAt: '2026-03-01T08:00:00Z',
   },
+  {
+    id: 'tt1',
+    title: 'Technical Test - Frontliner',
+    description: 'Tes teknis gabungan: presentasi slide + studi kasus akuntansi',
+    typeId: 'tmt9',
+    categories: [
+      {
+        id: 'ttc1', name: 'Presentasi Slide', weight: 75,
+        formAssessmentId: '',
+        components: [
+          { id: 'tc1', order: 1, weight: 100, passingScore: 70, contentId: 'pr1', fileUrl: 'https://docs.google.com/presentation/d/example1' },
+        ],
+      },
+      {
+        id: 'ttc2', name: 'Studi Kasus Akuntansi', weight: 25,
+        formAssessmentId: '',
+        components: [
+          { id: 'tc2', order: 1, weight: 100, passingScore: 70, contentId: 'ac1' },
+        ],
+      },
+    ],
+    createdBy: 'u5',
+    createdAt: '2026-04-01T08:00:00Z',
+  },
+]
+
+// ── Submissions ──
+export const submissions: Submission[] = [
+  {
+    id: 's1', trainingMethodId: 'ci3', participantId: 'u1', classId: 'cl1',
+    fileUrl: 'https://docs.google.com/presentation/d/example1',
+    description: 'Slide presentasi akhir program - Komunikasi Efektif',
+    submittedAt: '2026-04-10T08:00:00Z',
+  },
 ]
 
 // ── Knowledge Test Classes (screening) ──
@@ -796,63 +831,15 @@ export const curricula: Curriculum[] = [
         order: 1,
         trainingMethodType: 'inClass',
         contentId: 'ic1',
-        weight: 20,
+        weight: 35,
         passingScore: 70,
       },
       {
         id: 'ci2',
         order: 2,
-        trainingMethodType: 'inClass',
-        contentId: 'ic2',
-        weight: 20,
-        passingScore: 70,
-      },
-      {
-        id: 'ci3',
-        order: 3,
-        trainingMethodType: 'presentation',
-        contentId: 'pr1',
-        weight: 15,
-        passingScore: 70,
-      },
-      {
-        id: 'ci4',
-        order: 4,
-        trainingMethodType: 'multirater',
-        contentId: 'mr1',
-        weight: 15,
-        passingScore: 70,
-      },
-      {
-        id: 'ci5',
-        order: 5,
-        trainingMethodType: 'skillTest',
-        contentId: 'st1',
-        weight: 10,
-        passingScore: 65,
-      },
-      {
-        id: 'ci6',
-        order: 6,
-        trainingMethodType: 'validation',
-        contentId: 'vl1',
-        weight: 10,
-        passingScore: 70,
-      },
-      {
-        id: 'ci7',
-        order: 7,
-        trainingMethodType: 'verify',
-        contentId: 'vr1',
-        weight: 5,
-        passingScore: 75,
-      },
-      {
-        id: 'ci8',
-        order: 8,
-        trainingMethodType: 'accounting',
-        contentId: 'ac1',
-        weight: 5,
+        trainingMethodType: 'technicaltest',
+        contentId: 'tt1',
+        weight: 65,
         passingScore: 70,
       },
     ],
@@ -926,12 +913,9 @@ export const classes: Class[] = [
       },
     ],
     assessmentAssessorAssignments: [
-      { trainingMethodId: 'ci3', participantId: 'u1', raterIds: ['u3'] },
-      { trainingMethodId: 'ci3', participantId: 'u6', raterIds: ['u11'] },
-      { trainingMethodId: 'ci3', participantId: 'u7', raterIds: ['u3', 'u11'] },
-      { trainingMethodId: 'ci4', participantId: 'u1', raterIds: ['u3', 'u11'] },
-      { trainingMethodId: 'ci4', participantId: 'u6', raterIds: ['u11'] },
-      { trainingMethodId: 'ci4', participantId: 'u7', raterIds: ['u3'] },
+      { trainingMethodId: 'ci2', participantId: 'u1', raterIds: ['u3', 'u11'], raterWeights: { u3: 65, u11: 35 } },
+      { trainingMethodId: 'ci2', participantId: 'u6', raterIds: ['u11'] },
+      { trainingMethodId: 'ci2', participantId: 'u7', raterIds: ['u3'] },
     ],
     createdBy: 'u5',
     createdAt: '2026-03-12T08:00:00Z',

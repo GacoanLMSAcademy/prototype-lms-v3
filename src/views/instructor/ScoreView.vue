@@ -15,7 +15,13 @@ function findEntity(type: string, contentId: string) {
   return trainingMethods.find(m => m.id === contentId)
 }
 
-const formScaledMethods = ['presentation', 'skillTest', 'verify'] as const
+function hasFormCategory(cats: any[]): boolean {
+  return cats.some((c: any) => c.formAssessmentId && !(c.components?.length))
+}
+
+function hasComponentCategory(cats: any[]): boolean {
+  return cats.some((c: any) => c.components?.length)
+}
 const instructorMethods = curriculum?.items.filter(i => {
   if (i.trainingMethodType === 'inClass') return cls?.instructorId === auth.userId || (cls?.inClassInstructorAssignments ?? []).some(a => a.trainingMethodId === i.id && a.instructorId === auth.userId)
   const m = trainingMethods.find(tm => tm.id === i.contentId)
@@ -88,43 +94,56 @@ function submitAccountingScore(pid: string, testId: string) { alert('Accounting 
       </div>
     </div>
 
-    <!-- Form-based Scoring (Presentation, SkillTest, Verify) -->
-    <div v-else-if="selectedItem && formScaledMethods.includes(selectedItem.trainingMethodType as any) && selectedEntity && selectedParticipant" class="bg-white rounded shadow p-4 mb-4">
+    <!-- Form-based Scoring -->
+    <div v-else-if="selectedItem && selectedEntity && selectedParticipant && hasFormCategory((selectedEntity as any).categories ?? [])" class="bg-white rounded shadow p-4 mb-4">
       <h3 class="font-semibold mb-3">{{ (selectedEntity as any).title }} — {{ users.find(u => u.id === selectedParticipant)?.name }}</h3>
       <div v-for="cat in (selectedEntity as any).categories ?? []" :key="cat.id" class="border rounded p-3 mb-3 bg-gray-50">
         <h4 class="text-sm font-medium mb-2 text-blue-700">{{ cat.name }} ({{ cat.weight }}%)</h4>
-        <div v-for="field in formAssessments.find(f => f.id === cat.formAssessmentId)?.fields ?? []" :key="field.id" class="mb-3">
-          <label class="block text-sm font-medium mb-1">{{ field.label }}</label>
-          <div v-if="field.type === 'rating'">
-            <input type="range" :min="field.ratingMin ?? 1" :max="field.ratingMax ?? 5" class="w-full"/>
-            <div class="flex justify-between text-xs text-gray-500"><span>{{ field.ratingMin ?? 1 }}</span><span>{{ field.ratingMax ?? 5 }}</span></div>
-          </div>
-          <div v-else-if="field.type === 'mcq' && field.options">
-            <select class="w-full border rounded px-2 py-1 text-sm"><option value="">--</option><option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option></select>
-          </div>
-          <div v-else-if="field.type === 'trueFalse'">
-            <label class="mr-4 text-sm"><input type="radio" :name="'tf_' + field.id + '_' + cat.id" value="True" class="accent-blue-600"/> True</label>
-            <label class="text-sm"><input type="radio" :name="'tf_' + field.id + '_' + cat.id" value="False" class="accent-blue-600"/> False</label>
-          </div>
-          <div v-else-if="field.type === 'essay'">
-            <textarea class="w-full border rounded px-2 py-1 text-sm" rows="2"></textarea>
+        <div v-if="cat.components?.length">
+          <div v-for="comp in cat.components" :key="comp.id" class="mb-3 border-l-2 border-blue-200 pl-3">
+            <p class="text-xs font-medium text-blue-600 mb-1">{{ trainingMethods.find(m => m.id === comp.contentId)?.title ?? comp.contentId }}</p>
+            <div v-for="subCat in trainingMethods.find(m => m.id === comp.contentId)?.categories ?? []" :key="subCat.id" class="mb-2">
+              <p class="text-xs text-gray-500 mb-1">{{ subCat.name }}</p>
+              <div v-for="field in formAssessments.find(f => f.id === subCat.formAssessmentId)?.fields ?? []" :key="field.id" class="mb-2">
+                <label class="block text-xs font-medium mb-0.5">{{ field.label }}</label>
+                <div v-if="field.type === 'rating'">
+                  <input type="range" :min="field.ratingMin ?? 1" :max="field.ratingMax ?? 5" class="w-full"/>
+                  <div class="flex justify-between text-xs text-gray-500"><span>{{ field.ratingMin ?? 1 }}</span><span>{{ field.ratingMax ?? 5 }}</span></div>
+                </div>
+                <div v-else-if="field.type === 'mcq' && field.options">
+                  <select class="w-full border rounded px-2 py-1 text-sm"><option value="">--</option><option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option></select>
+                </div>
+                <div v-else-if="field.type === 'trueFalse'">
+                  <label class="mr-4 text-sm"><input type="radio" :name="'tf_' + field.id + '_' + comp.id" value="True" class="accent-blue-600"/> True</label>
+                  <label class="text-sm"><input type="radio" :name="'tf_' + field.id + '_' + comp.id" value="False" class="accent-blue-600"/> False</label>
+                </div>
+                <div v-else-if="field.type === 'essay'">
+                  <textarea class="w-full border rounded px-2 py-1 text-sm" rows="2"></textarea>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <button @click="submitFormScore(selectedParticipant, cat.formAssessmentId)" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Submit Category Score</button>
-      </div>
-    </div>
-
-    <!-- Accounting Scoring (test-based with categories) -->
-    <div v-else-if="selectedItem?.trainingMethodType === 'accounting' && selectedEntity && selectedParticipant" class="bg-white rounded shadow p-4 mb-4">
-      <h3 class="font-semibold mb-3">{{ (selectedEntity as any).title }} — {{ users.find(u => u.id === selectedParticipant)?.name }}</h3>
-      <div v-for="cat in (selectedEntity as any).categories ?? []" :key="cat.id" class="border rounded p-3 mb-3 bg-gray-50">
-        <h4 class="text-sm font-medium mb-2 text-blue-700">{{ cat.name }} ({{ cat.weight }}%)</h4>
-        <div v-for="q in tests.find(t => t.id === cat.testId)?.questions ?? []" :key="q.id" class="mb-3">
-          <label class="block text-sm font-medium mb-1">{{ q.text }}</label>
-          <textarea class="w-full border rounded px-2 py-1 text-sm" rows="3" placeholder="Participant's answer..."></textarea>
-          <div class="mt-1"><label class="text-xs text-gray-500">Score (0-{{ q.points }})</label><input type="number" :max="q.points" class="w-24 border rounded px-2 py-0.5 text-sm ml-2"/></div>
+        <div v-else>
+          <div v-for="field in formAssessments.find(f => f.id === cat.formAssessmentId)?.fields ?? []" :key="field.id" class="mb-3">
+            <label class="block text-sm font-medium mb-1">{{ field.label }}</label>
+            <div v-if="field.type === 'rating'">
+              <input type="range" :min="field.ratingMin ?? 1" :max="field.ratingMax ?? 5" class="w-full"/>
+              <div class="flex justify-between text-xs text-gray-500"><span>{{ field.ratingMin ?? 1 }}</span><span>{{ field.ratingMax ?? 5 }}</span></div>
+            </div>
+            <div v-else-if="field.type === 'mcq' && field.options">
+              <select class="w-full border rounded px-2 py-1 text-sm"><option value="">--</option><option v-for="opt in field.options" :key="opt" :value="opt">{{ opt }}</option></select>
+            </div>
+            <div v-else-if="field.type === 'trueFalse'">
+              <label class="mr-4 text-sm"><input type="radio" :name="'tf_' + field.id + '_' + cat.id" value="True" class="accent-blue-600"/> True</label>
+              <label class="text-sm"><input type="radio" :name="'tf_' + field.id + '_' + cat.id" value="False" class="accent-blue-600"/> False</label>
+            </div>
+            <div v-else-if="field.type === 'essay'">
+              <textarea class="w-full border rounded px-2 py-1 text-sm" rows="2"></textarea>
+            </div>
+          </div>
+          <button @click="submitFormScore(selectedParticipant, cat.formAssessmentId)" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Submit Category Score</button>
         </div>
-        <button @click="submitAccountingScore(selectedParticipant, cat.testId)" class="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700">Submit Score</button>
       </div>
     </div>
 

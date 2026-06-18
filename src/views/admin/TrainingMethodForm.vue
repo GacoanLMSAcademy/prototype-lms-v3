@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { trainingMethods, trainingMethodTypes, formAssessments } from '@/data/mockData'
-import type { MethodCategory } from '@/types'
+import type { MethodCategory, TrainingMethodComponent } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,8 +14,29 @@ const description = ref(existing?.description ?? '')
 const typeId = ref(existing?.typeId ?? (trainingMethodTypes[0]?.id ?? ''))
 const categories = ref<MethodCategory[]>(existing?.categories ?? [])
 
-function addCategory() { categories.value.push({ id: 'mc' + Date.now(), name: '', weight: 0, formAssessmentId: '' }) }
+const componentMethods = computed(() => trainingMethods.filter(m => m.id !== route.params.id))
+
+function addCategory() {
+  categories.value.push({ id: 'mc' + Date.now(), name: '', weight: 0, formAssessmentId: '' })
+}
 function removeCategory(idx: number) { categories.value.splice(idx, 1) }
+
+function addComponent(cat: MethodCategory) {
+  if (!cat.components) cat.components = []
+  cat.components.push({ id: 'tc' + Date.now(), order: cat.components.length + 1, weight: 0, passingScore: 70, contentId: '' })
+}
+function removeComponent(cat: MethodCategory, idx: number) {
+  cat.components?.splice(idx, 1)
+  if (cat.components?.length === 0) cat.components = undefined
+}
+function moveComponent(cat: MethodCategory, from: number, to: number) {
+  if (!cat.components) return
+  if (to < 0 || to >= cat.components.length) return
+  const a = cat.components[from]; const b = cat.components[to]
+  if (!a || !b) return
+  cat.components[from] = b; cat.components[to] = a
+  cat.components.forEach((c, i) => c.order = i + 1)
+}
 
 function save() {
   alert('Training method saved (mock)')
@@ -41,7 +62,42 @@ function save() {
           <div class="grid grid-cols-3 gap-3 mb-2">
             <div><label class="text-xs">Name</label><input v-model="cat.name" class="w-full border rounded px-2 py-1 text-sm" /></div>
             <div><label class="text-xs">Weight (%)</label><input v-model.number="cat.weight" type="number" class="w-full border rounded px-2 py-1 text-sm" /></div>
-            <div><label class="text-xs">Form Assessment</label><select v-model="cat.formAssessmentId" class="w-full border rounded px-2 py-1 text-sm"><option value="">-- Select --</option><option v-for="f in formAssessments" :key="f.id" :value="f.id">{{ f.title }}</option></select></div>
+            <div v-if="!(cat.components?.length)">
+              <label class="text-xs">Form Assessment</label>
+              <select v-model="cat.formAssessmentId" class="w-full border rounded px-2 py-1 text-sm">
+                <option value="">-- Select --</option>
+                <option v-for="f in formAssessments" :key="f.id" :value="f.id">{{ f.title }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div v-if="cat.components?.length" class="mt-3 border-t pt-3">
+            <div class="flex items-center justify-between mb-2"><h4 class="text-xs font-semibold uppercase text-gray-500">Components</h4><button @click="addComponent(cat)" class="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300">+ Component</button></div>
+            <div v-for="(comp, cj) in cat.components" :key="comp.id" class="border rounded p-3 mb-2 bg-white">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex gap-1">
+                  <button @click="moveComponent(cat, cj, cj - 1)" :disabled="cj === 0" class="text-xs px-1" :class="cj === 0 ? 'text-gray-300' : 'hover:bg-gray-200'">▲</button>
+                  <button @click="moveComponent(cat, cj, cj + 1)" :disabled="cj === (cat.components?.length ?? 0) - 1" class="text-xs px-1" :class="cj === (cat.components?.length ?? 0) - 1 ? 'text-gray-300' : 'hover:bg-gray-200'">▼</button>
+                </div>
+                <span class="text-xs font-medium">Component {{ cj + 1 }}</span>
+                <button @click="removeComponent(cat, cj)" class="text-red-500 text-xs">Remove</button>
+              </div>
+              <div class="grid grid-cols-4 gap-2">
+                <div class="col-span-1">
+                  <label class="text-xs">Method</label>
+                  <select v-model="comp.contentId" class="w-full border rounded px-2 py-1 text-sm">
+                    <option value="">-- Select --</option>
+                    <option v-for="cm in componentMethods" :key="cm.id" :value="cm.id">{{ cm.title }}</option>
+                  </select>
+                </div>
+                <div><label class="text-xs">Weight (%)</label><input v-model.number="comp.weight" type="number" class="w-full border rounded px-2 py-1 text-sm" /></div>
+                <div><label class="text-xs">Passing Score</label><input v-model.number="comp.passingScore" type="number" class="w-full border rounded px-2 py-1 text-sm" /></div>
+                <div><label class="text-xs">File URL</label><input v-model="comp.fileUrl" class="w-full border rounded px-2 py-1 text-sm" placeholder="https://..." /></div>
+              </div>
+            </div>
+          </div>
+          <div v-else class="mt-2">
+            <button @click="addComponent(cat)" class="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300">+ Component</button>
           </div>
         </div>
       </div>

@@ -80,11 +80,21 @@ export interface InClass {
 }
 
 // ── Training Method ──
+export interface TrainingMethodComponent {
+  id: string
+  order: number
+  weight: number
+  passingScore: number
+  contentId: string
+  fileUrl?: string
+}
+
 export interface MethodCategory {
   id: string
   name: string
   weight: number
   formAssessmentId: string
+  components?: TrainingMethodComponent[]
 }
 
 export interface TrainingMethod {
@@ -167,6 +177,17 @@ export interface ParticipantAssessorAssignment {
   trainingMethodId: string
   participantId: string
   raterIds: string[]
+  raterWeights?: Record<string, number>
+}
+
+export interface Submission {
+  id: string
+  trainingMethodId: string
+  participantId: string
+  classId: string
+  fileUrl: string
+  description: string
+  submittedAt: string
 }
 
 export interface Class {

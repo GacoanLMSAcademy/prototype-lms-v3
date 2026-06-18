@@ -6,9 +6,44 @@ import { classes, curricula, testAttempts, assessments, trainingMethods } from '
 const auth = useAuthStore()
 const myClasses = computed(() => classes.filter(c => c.participants.includes(auth.userId)))
 
-function getMethodEntities(contentId: string) {
+function getMethodTitle(contentId: string): string {
   const m = trainingMethods.find(tm => tm.id === contentId)
-  return m ? [m] : []
+  return m ? m.title : contentId
+}
+
+function computeCategoryScore(item: { id: string; contentId: string }, cls: typeof classes[number], pid: string, cat: any): number {
+  const components = cat.components ?? []
+  if (components.length === 0) {
+    const ass = assessments.filter(a => a.participantId === pid && a.classId === cls.id && a.trainingMethodId === item.id && a.categoryId === cat.id)
+    if (ass.length === 0) return 0
+    const clsObj = classes.find(c => c.id === cls.id)
+    const assign = clsObj?.assessmentAssessorAssignments?.find(a => a.trainingMethodId === item.id && a.participantId === pid)
+    const weights = assign?.raterWeights
+    if (!weights || Object.keys(weights).length === 0) {
+      return ass.reduce((s, a) => s + a.normalizedScore, 0) / ass.length
+    }
+    const totalWeight = Object.values(weights).reduce((s: number, w) => s + w, 0) || 100
+    let weightedSum = 0
+    ass.forEach(a => {
+      const w = weights[a.raterId] ?? 0
+      weightedSum += a.normalizedScore * (w / totalWeight)
+    })
+    return weightedSum
+  }
+  const compTotalWeight = components.reduce((s: number, c: any) => s + c.weight, 0) || 1
+  let compWeightedSum = 0
+  components.forEach((comp: any) => {
+    const compMethod = trainingMethods.find(m => m.id === comp.contentId)
+    if (!compMethod) return
+    const subCats = compMethod.categories ?? []
+    const subTotalWeight = subCats.reduce((s: number, sc: any) => s + sc.weight, 0) || 1
+    let subWeightedSum = 0
+    subCats.forEach((sc: any) => {
+      subWeightedSum += computeCategoryScore(item, cls, pid, sc) * (sc.weight / subTotalWeight)
+    })
+    compWeightedSum += Math.round(subWeightedSum) * (comp.weight / compTotalWeight)
+  })
+  return compWeightedSum
 }
 
 const transcripts = computed(() => myClasses.value.map(cls => {
@@ -19,19 +54,18 @@ const transcripts = computed(() => myClasses.value.map(cls => {
       const atts = testAttempts.filter(a => a.participantId === auth.userId && a.classId === cls.id)
       score = atts.length > 0 ? Math.round(atts.reduce((s, a) => s + a.normalizedScore, 0) / atts.length) : 0
     } else {
-      const entity = getMethodEntities(item.contentId)[0]
-      const cats = entity?.categories ?? []
+      const method = trainingMethods.find(m => m.id === item.contentId)
+      const cats = method?.categories ?? []
       const totalWeight = cats.reduce((s: number, c: any) => s + c.weight, 0) || 1
       let weightedSum = 0
       cats.forEach((cat: any) => {
-        const ass = assessments.filter(a => a.participantId === auth.userId && a.classId === cls.id && a.trainingMethodId === item.id && a.categoryId === cat.id)
-        const avg = ass.length > 0 ? ass.reduce((s, a) => s + a.normalizedScore, 0) / ass.length : 0
-        weightedSum += avg * (cat.weight / totalWeight)
+        weightedSum += computeCategoryScore(item, cls, auth.userId, cat) * (cat.weight / totalWeight)
       })
       score = Math.round(weightedSum)
     }
     const passStatus = score >= item.passingScore ? 'pass' : 'fail'
-    return { methodTitle: item.trainingMethodType, methodType: item.trainingMethodType, weight: item.weight, score, weightedScore: Math.round((item.weight / 100) * score), passStatus }
+    const title = getMethodTitle(item.contentId)
+    return { methodTitle: title, methodType: item.trainingMethodType, weight: item.weight, score, weightedScore: Math.round((item.weight / 100) * score), passStatus }
   }) ?? []
   const total = entries.reduce((s, e) => s + e.weightedScore, 0)
   return { className: cls.name, entries, totalScore: total, pass: total >= (curriculum?.passingThreshold ?? 75) }
