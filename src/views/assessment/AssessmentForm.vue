@@ -115,7 +115,7 @@ function submitAll() {
 
 <template>
   <div v-if="cls && item && formBlocks.length > 0">
-    <h2 class="text-2xl font-bold mb-2">{{ trainingMethods.find(m => m.id === item.contentId)?.title ?? item.trainingMethodType }} Assessment</h2>
+    <h2 class="text-2xl font-bold mb-2">{{ trainingMethods.find(m => m.id === item?.contentId)?.title ?? item?.trainingMethodType }} Assessment</h2>
     <p class="text-gray-500 mb-6">{{ cls.name }}</p>
     <div v-for="pid in participants" :key="pid" class="bg-white rounded shadow p-4 mb-4">
       <h3 class="font-semibold mb-1">{{ users.find(u => u.id === pid)?.name }}</h3>
