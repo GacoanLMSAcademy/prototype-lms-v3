@@ -2,18 +2,14 @@
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  accountingMethods,
   classes,
   curricula,
   inClasses,
   knowledgeTestClasses,
   materis,
-  multiraterMethods,
-  presentationMethods,
-  skillTestMethods,
+  trainingMethods,
+  trainingMethodTypes,
   users as allUsers,
-  validationMethods,
-  verifyMethods,
 } from '@/data/mockData'
 import type { ClassStatus } from '@/types'
 
@@ -83,7 +79,9 @@ const instructors = allUsers.filter(u => u.role === 'instructor')
 const participantPool = allUsers.filter(u => u.role === 'participant')
 const raterPool = allUsers.filter(u => u.role === 'rater')
 const selectedCurriculum = computed(() => curricula.find(c => c.id === curriculumId.value))
-const formAssessmentTypes = ['multirater', 'presentation', 'validation', 'skillTest', 'verify', 'accounting']
+const formAssessmentTypes = trainingMethodTypes
+  .filter(t => !['inClass', 'knowledgeTest'].includes(t.name.toLowerCase().replace(/\s+/g, '')))
+  .map(t => t.name.toLowerCase().replace(/\s+/g, ''))
 
 function toggleParticipant(id: string) {
   const idx = participants.value.indexOf(id)
@@ -96,13 +94,8 @@ function toggleRater(id: string) {
 
 function getMethodTitle(type: string, contentId: string) {
   if (type === 'inClass') return inClasses.find(ic => ic.id === contentId)?.title
-  if (type === 'multirater') return multiraterMethods.find(m => m.id === contentId)?.title
-  if (type === 'presentation') return presentationMethods.find(m => m.id === contentId)?.title
-  if (type === 'validation') return validationMethods.find(m => m.id === contentId)?.title
-  if (type === 'skillTest') return skillTestMethods.find(m => m.id === contentId)?.title
-  if (type === 'verify') return verifyMethods.find(m => m.id === contentId)?.title
-  if (type === 'accounting') return accountingMethods.find(m => m.id === contentId)?.title
-  return contentId
+  const m = trainingMethods.find(tm => tm.id === contentId)
+  return m ? m.title : contentId
 }
 
 function assignedInstructorId(trainingMethodId: string, inClassId: string, categoryId: string, materiId: string) {

@@ -2,21 +2,18 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { classes, curricula, formAssessments, assessments, multiraterMethods, presentationMethods, validationMethods, skillTestMethods, verifyMethods } from '@/data/mockData'
+import { classes, curricula, formAssessments, assessments, trainingMethods, trainingMethodTypes, submissions } from '@/data/mockData'
 
 const auth = useAuthStore()
 const router = useRouter()
 const myClasses = classes.filter(c => c.raters.includes(auth.userId) || (c.assessmentAssessorAssignments ?? []).some(a => a.raterIds.includes(auth.userId)))
 
-const formMethodTypes = ['multirater', 'presentation', 'validation', 'skillTest', 'verify'] as const
+const formMethodTypes = trainingMethodTypes
+  .filter(t => !['inClass', 'knowledgeTest'].includes(t.name.toLowerCase().replace(/\s+/g, '')))
+  .map(t => t.name.toLowerCase().replace(/\s+/g, ''))
 
-function findMethodEntity(type: string, contentId: string) {
-  if (type === 'multirater') return multiraterMethods.find(m => m.id === contentId)
-  if (type === 'presentation') return presentationMethods.find(m => m.id === contentId)
-  if (type === 'validation') return validationMethods.find(m => m.id === contentId)
-  if (type === 'skillTest') return skillTestMethods.find(m => m.id === contentId)
-  if (type === 'verify') return verifyMethods.find(m => m.id === contentId)
-  return undefined
+function findMethodEntity(_type: string, contentId: string) {
+  return trainingMethods.find(m => m.id === contentId)
 }
 
 interface PendingItem { methodId: string; entityTitle: string; className: string; classId: string }
@@ -45,7 +42,9 @@ const pending = computed<PendingItem[]>(() => {
     <h3 class="font-semibold mb-3">Pending</h3>
     <div v-if="pending.length === 0" class="text-gray-400 text-sm mb-6">No pending assessments</div>
     <div v-for="s in pending" :key="s.methodId + s.classId" class="bg-white rounded shadow p-4 mb-3 flex items-center justify-between">
-      <div><p class="font-medium">{{ s.entityTitle }}</p><p class="text-sm text-gray-500">{{ s.className }}</p></div>
+      <div><p class="font-medium">{{ s.entityTitle }}</p><p class="text-sm text-gray-500">{{ s.className }}</p>
+        <span v-if="submissions.filter(sub => sub.trainingMethodId === s.methodId && sub.classId === s.classId).length" class="text-xs text-green-600">Has submissions</span>
+      </div>
       <button @click="router.push(`/rater/assessments/${s.methodId}?classId=${s.classId}`)" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm">Assess</button>
     </div>
     <h3 class="font-semibold mb-3 mt-6">Completed</h3>

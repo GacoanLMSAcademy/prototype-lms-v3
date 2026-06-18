@@ -79,73 +79,38 @@ export interface InClass {
   createdAt: string
 }
 
-// ── Training Method Entities (each with its own categories) ──
+// ── Training Method ──
+export interface TrainingMethodComponent {
+  id: string
+  order: number
+  weight: number
+  passingScore: number
+  contentId: string
+}
+
 export interface MethodCategory {
   id: string
   name: string
   weight: number
   formAssessmentId: string
+  typeId?: string
+  components?: TrainingMethodComponent[]
 }
 
-export interface MultiraterMethod {
+export interface TrainingMethod {
   id: string
   title: string
   description: string
-  categories: MethodCategory[]
-  assessorTypes: string[]
-  createdBy: string
-  createdAt: string
-}
-
-export interface PresentationMethod {
-  id: string
-  title: string
-  description: string
+  typeId: string
   categories: MethodCategory[]
   createdBy: string
   createdAt: string
 }
 
-export interface ValidationMethod {
-  id: string
-  title: string
-  description: string
-  categories: MethodCategory[]
-  createdBy: string
-  createdAt: string
-}
-
-export interface SkillTestMethod {
-  id: string
-  title: string
-  description: string
-  categories: MethodCategory[]
-  minAttempts: number
-  createdBy: string
-  createdAt: string
-}
-
-export interface VerifyMethod {
-  id: string
-  title: string
-  description: string
-  categories: MethodCategory[]
-  createdBy: string
-  createdAt: string
-}
-
-export interface AccountingCategory {
+export interface TrainingMethodType {
   id: string
   name: string
-  weight: number
-  testId: string
-}
-
-export interface AccountingMethod {
-  id: string
-  title: string
   description: string
-  categories: AccountingCategory[]
   createdBy: string
   createdAt: string
 }
@@ -169,55 +134,17 @@ export interface FormAssessment {
   title: string
   description: string
   fields: FormField[]
+  typeId?: string
   createdBy: string
   createdAt: string
   clonedFrom?: string
-}
-
-// ── Training Method ──
-export type TrainingMethodType =
-  | 'knowledgeTest'
-  | 'inClass'
-  | 'multirater'
-  | 'presentation'
-  | 'validation'
-  | 'skillTest'
-  | 'verify'
-  | 'accounting'
-  | 'technicalTest'
-
-export type FormBasedMethodType = Extract<TrainingMethodType, 'multirater' | 'presentation' | 'validation' | 'skillTest' | 'verify' | 'accounting'>
-
-export interface TechnicalTestItem {
-  id: string
-  order: number
-  trainingMethodType: FormBasedMethodType
-  contentId: string
-  weight: number
-  passingScore: number
-}
-
-export interface TechnicalTestCategory {
-  id: string
-  name: string
-  weight: number
-  items: TechnicalTestItem[]
-}
-
-export interface TechnicalTestMethod {
-  id: string
-  title: string
-  description: string
-  categories: TechnicalTestCategory[]
-  createdBy: string
-  createdAt: string
 }
 
 // ── Curriculum ──
 export interface CurriculumItem {
   id: string
   order: number
-  trainingMethodType: TrainingMethodType
+  trainingMethodType: string
   contentId: string
   weight: number
   passingScore: number
@@ -250,6 +177,17 @@ export interface ParticipantAssessorAssignment {
   trainingMethodId: string
   participantId: string
   raterIds: string[]
+  raterWeights?: Record<string, number>
+}
+
+export interface Submission {
+  id: string
+  trainingMethodId: string
+  participantId: string
+  classId: string
+  fileUrl: string
+  description: string
+  submittedAt: string
 }
 
 export interface Class {
@@ -352,7 +290,7 @@ export interface ParticipantProgress {
   participantId: string
   classId: string
   methodId: string
-  methodType: TrainingMethodType
+  methodType: string
   status: 'pending' | 'inProgress' | 'completed' | 'passed' | 'failed' | 'remedial'
   score?: number
 }
@@ -360,7 +298,7 @@ export interface ParticipantProgress {
 // ── Transcript ──
 export interface TranscriptEntry {
   methodTitle: string
-  methodType: TrainingMethodType
+  methodType: string
   weight: number
   score: number
   weightedScore: number
@@ -381,7 +319,7 @@ export interface Remedial {
   participantId: string
   classId: string
   trainingMethodId: string
-  methodType: TrainingMethodType
+  methodType: string
   status: 'assigned' | 'inProgress' | 'completed'
   score?: number
   assignedAt: string

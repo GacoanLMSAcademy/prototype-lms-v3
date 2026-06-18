@@ -5,15 +5,10 @@ import {
   curricula,
   tests,
   inClasses,
-  formAssessments,
-  multiraterMethods,
-  presentationMethods,
-  validationMethods,
-  skillTestMethods,
-  verifyMethods,
-  accountingMethods,
+  trainingMethods,
+  trainingMethodTypes,
 } from '@/data/mockData'
-import type { CurriculumItem, TrainingMethodType } from '@/types'
+import type { CurriculumItem } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -28,27 +23,19 @@ const items = ref<CurriculumItem[]>(existing?.items ?? [])
 const totalWeight = computed(() => items.value.reduce((s, i) => s + i.weight, 0))
 const valid = computed(() => totalWeight.value === 100 && items.value.length > 0)
 
-const methodTypes: { value: TrainingMethodType; label: string; contentLabel: string }[] = [
+const methodTypes: { value: string; label: string; contentLabel: string }[] = [
   { value: 'knowledgeTest', label: 'Knowledge Test', contentLabel: 'Test' },
   { value: 'inClass', label: 'In-Class', contentLabel: 'In-Class' },
-  { value: 'multirater', label: 'Multirater', contentLabel: 'Multirater Method' },
-  { value: 'presentation', label: 'Presentation', contentLabel: 'Presentation Method' },
-  { value: 'validation', label: 'Validation', contentLabel: 'Validation Method' },
-  { value: 'skillTest', label: 'Skill Test', contentLabel: 'Skill Test Method' },
-  { value: 'verify', label: 'Verify', contentLabel: 'Verify Method' },
-  { value: 'accounting', label: 'Accounting', contentLabel: 'Accounting Method' },
+  ...trainingMethodTypes.map(t => ({ value: t.name.toLowerCase().replace(/\s+/g, ''), label: t.name, contentLabel: t.name + ' Method' })),
 ]
 
-function getContentList(type: TrainingMethodType) {
+function getContentList(type: string) {
   if (type === 'knowledgeTest') return tests.map((t) => ({ id: t.id, title: t.title }))
   if (type === 'inClass') return inClasses.map((ic) => ({ id: ic.id, title: ic.title }))
-  if (type === 'multirater') return multiraterMethods.map((m) => ({ id: m.id, title: m.title }))
-  if (type === 'presentation') return presentationMethods.map((m) => ({ id: m.id, title: m.title }))
-  if (type === 'validation') return validationMethods.map((m) => ({ id: m.id, title: m.title }))
-  if (type === 'skillTest') return skillTestMethods.map((m) => ({ id: m.id, title: m.title }))
-  if (type === 'verify') return verifyMethods.map((m) => ({ id: m.id, title: m.title }))
-  if (type === 'accounting') return accountingMethods.map((m) => ({ id: m.id, title: m.title }))
-  return []
+  return trainingMethods.filter(m => {
+    const t = trainingMethodTypes.find(t => t.id === m.typeId)
+    return t && t.name.toLowerCase().replace(/\s+/g, '') === type
+  }).map(m => ({ id: m.id, title: m.title }))
 }
 
 function addItem() {
