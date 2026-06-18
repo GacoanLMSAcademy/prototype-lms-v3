@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { formAssessments } from '@/data/mockData'
+import { formAssessments, trainingMethodTypes } from '@/data/mockData'
 import type { FormField, FormFieldType } from '@/types'
 
 const route = useRoute()
@@ -11,6 +11,7 @@ const existing = isEdit ? formAssessments.find(f => f.id === route.params.id) : 
 
 const title = ref(existing?.title ?? '')
 const description = ref(existing?.description ?? '')
+const typeId = ref(existing?.typeId ?? '')
 const fields = ref<FormField[]>(existing?.fields ?? [])
 
 const totalWeight = computed(() => fields.value.reduce((s, f) => s + f.points, 0))
@@ -70,6 +71,13 @@ function save() {
     <div class="bg-white p-6 rounded shadow space-y-4 max-w-3xl">
       <div><label class="block text-sm font-medium mb-1">Form Title</label><input v-model="title" class="w-full border rounded px-3 py-2" placeholder="e.g. Multirater - Kompetensi Karyawan"/></div>
       <div><label class="block text-sm font-medium mb-1">Description</label><textarea v-model="description" class="w-full border rounded px-3 py-2" rows="2"/></div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Training Method Type</label>
+        <select v-model="typeId" class="w-full border rounded px-3 py-2">
+          <option value="">-- Select Type --</option>
+          <option v-for="t in trainingMethodTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
+        </select>
+      </div>
       <div>
         <div class="flex items-center justify-between mb-2">
           <h3 class="font-semibold">Fields</h3>

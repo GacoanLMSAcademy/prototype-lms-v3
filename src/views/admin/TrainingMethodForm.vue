@@ -1,38 +1,46 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { multiraterMethods, formAssessments } from '@/data/mockData'
+import { trainingMethods, trainingMethodTypes, formAssessments } from '@/data/mockData'
 import type { MethodCategory } from '@/types'
+
 const route = useRoute()
 const router = useRouter()
 const isEdit = !!(route.params.id && route.params.id !== 'new')
-const existing = isEdit ? multiraterMethods.find(m => m.id === route.params.id) : null
+const existing = isEdit ? trainingMethods.find(m => m.id === route.params.id) : null
+
 const title = ref(existing?.title ?? '')
 const description = ref(existing?.description ?? '')
+const typeId = ref(existing?.typeId ?? (trainingMethodTypes[0]?.id ?? ''))
 const categories = ref<MethodCategory[]>(existing?.categories ?? [])
-const assessorTypes = ref<string[]>(existing?.assessorTypes ?? ['superior', 'colleague', 'subordinate'])
-const allAssessorTypes = ['superior', 'colleague', 'subordinate']
+
 function addCategory() { categories.value.push({ id: 'mc' + Date.now(), name: '', weight: 0, formAssessmentId: '' }) }
 function removeCategory(idx: number) { categories.value.splice(idx, 1) }
-function toggleAssessorType(t: string) { const i = assessorTypes.value.indexOf(t); i >= 0 ? assessorTypes.value.splice(i, 1) : assessorTypes.value.push(t) }
-function save() { alert('Multirater saved (mock)'); router.push('/admin/multirater') }
+
+function save() {
+  alert('Training method saved (mock)')
+  router.push('/admin/training-method')
+}
 </script>
+
 <template>
   <div>
-    <h2 class="text-2xl font-bold mb-6">{{ isEdit ? 'Edit Multirater' : 'New Multirater' }}</h2>
+    <h2 class="text-2xl font-bold mb-6">{{ isEdit ? 'Edit Training Method' : 'New Training Method' }}</h2>
     <div class="bg-white p-6 rounded shadow space-y-4 max-w-4xl">
-      <div class="grid grid-cols-2 gap-4">
-        <div><label class="block text-sm font-medium mb-1">Title</label><input v-model="title" class="w-full border rounded px-3 py-2"/></div>
-        <div><label class="block text-sm font-medium mb-1">Assessor Types</label><div class="flex gap-3 mt-1"><label v-for="t in allAssessorTypes" :key="t" class="text-sm flex items-center gap-1"><input type="checkbox" :checked="assessorTypes.includes(t)" @change="toggleAssessorType(t)" class="accent-blue-600"/>{{ t }}</label></div></div>
+      <div><label class="block text-sm font-medium mb-1">Title</label><input v-model="title" class="w-full border rounded px-3 py-2" /></div>
+      <div><label class="block text-sm font-medium mb-1">Type</label>
+        <select v-model="typeId" class="w-full border rounded px-3 py-2">
+          <option v-for="t in trainingMethodTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
+        </select>
       </div>
-      <div><label class="block text-sm font-medium mb-1">Description</label><textarea v-model="description" class="w-full border rounded px-3 py-2"/></div>
+      <div><label class="block text-sm font-medium mb-1">Description</label><textarea v-model="description" class="w-full border rounded px-3 py-2" /></div>
       <div>
         <div class="flex items-center justify-between mb-2"><h3 class="font-semibold">Categories</h3><button @click="addCategory" class="text-sm bg-gray-200 px-2 py-1 rounded hover:bg-gray-300">+ Category</button></div>
         <div v-for="(cat, ci) in categories" :key="cat.id" class="border rounded p-4 mb-4 bg-gray-50">
           <div class="flex items-center justify-between mb-2"><span class="text-sm font-medium">Category {{ ci + 1 }}</span><button @click="removeCategory(ci)" class="text-red-500 text-sm">Remove</button></div>
           <div class="grid grid-cols-3 gap-3 mb-2">
-            <div><label class="text-xs">Name</label><input v-model="cat.name" class="w-full border rounded px-2 py-1 text-sm"/></div>
-            <div><label class="text-xs">Weight (%)</label><input v-model.number="cat.weight" type="number" class="w-full border rounded px-2 py-1 text-sm"/></div>
+            <div><label class="text-xs">Name</label><input v-model="cat.name" class="w-full border rounded px-2 py-1 text-sm" /></div>
+            <div><label class="text-xs">Weight (%)</label><input v-model.number="cat.weight" type="number" class="w-full border rounded px-2 py-1 text-sm" /></div>
             <div><label class="text-xs">Form Assessment</label><select v-model="cat.formAssessmentId" class="w-full border rounded px-2 py-1 text-sm"><option value="">-- Select --</option><option v-for="f in formAssessments" :key="f.id" :value="f.id">{{ f.title }}</option></select></div>
           </div>
         </div>

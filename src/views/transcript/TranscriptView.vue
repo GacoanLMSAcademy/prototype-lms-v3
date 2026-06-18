@@ -1,32 +1,25 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { classes, curricula, testAttempts, assessments, multiraterMethods, presentationMethods, validationMethods, skillTestMethods, verifyMethods, accountingMethods } from '@/data/mockData'
+import { classes, curricula, testAttempts, assessments, trainingMethods } from '@/data/mockData'
 
 const auth = useAuthStore()
 const myClasses = computed(() => classes.filter(c => c.participants.includes(auth.userId)))
 
-const formMethodTypes = ['multirater', 'presentation', 'validation', 'skillTest', 'verify'] as const
-
-function getMethodEntities(type: string) {
-  if (type === 'multirater') return multiraterMethods
-  if (type === 'presentation') return presentationMethods
-  if (type === 'validation') return validationMethods
-  if (type === 'skillTest') return skillTestMethods
-  if (type === 'verify') return verifyMethods
-  if (type === 'accounting') return accountingMethods
-  return []
+function getMethodEntities(contentId: string) {
+  const m = trainingMethods.find(tm => tm.id === contentId)
+  return m ? [m] : []
 }
 
 const transcripts = computed(() => myClasses.value.map(cls => {
   const curriculum = curricula.find(c => c.id === cls.curriculumId)
   const entries = curriculum?.items.map(item => {
     let score = 0
-    if (item.trainingMethodType === 'accounting' || item.trainingMethodType === 'inClass' || item.trainingMethodType === 'knowledgeTest') {
+    if (item.trainingMethodType === 'inClass' || item.trainingMethodType === 'knowledgeTest') {
       const atts = testAttempts.filter(a => a.participantId === auth.userId && a.classId === cls.id)
       score = atts.length > 0 ? Math.round(atts.reduce((s, a) => s + a.normalizedScore, 0) / atts.length) : 0
-    } else if (formMethodTypes.includes(item.trainingMethodType as any)) {
-      const entity = getMethodEntities(item.trainingMethodType).find((e: any) => e.id === item.contentId) as any
+    } else {
+      const entity = getMethodEntities(item.contentId)[0]
       const cats = entity?.categories ?? []
       const totalWeight = cats.reduce((s: number, c: any) => s + c.weight, 0) || 1
       let weightedSum = 0

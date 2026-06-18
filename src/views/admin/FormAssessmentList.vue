@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { formAssessments } from '@/data/mockData'
+import { formAssessments, trainingMethodTypes } from '@/data/mockData'
 import { useRouter } from 'vue-router'
 const router = useRouter()
+
+function typeName(typeId?: string) {
+  if (!typeId) return ''
+  const t = trainingMethodTypes.find(t => t.id === typeId)
+  return t ? t.name : ''
+}
 </script>
 
 <template>
@@ -17,7 +23,11 @@ const router = useRouter()
           <button @click="router.push('/admin/form-builder/' + f.id)" class="text-blue-600 hover:underline text-sm">Edit</button>
         </div>
         <p class="text-sm text-gray-500 mb-2">{{ f.description }}</p>
-        <div class="text-xs text-gray-400">{{ f.fields.length }} fields</div>
+        <div class="text-xs" v-if="f.typeId">
+          <span class="text-blue-700 font-medium">Type:</span>
+          <span class="text-gray-500 ml-1">{{ typeName(f.typeId) }}</span>
+        </div>
+        <div class="text-xs text-gray-400 mt-1">{{ f.fields.length }} fields</div>
         <div class="flex flex-wrap gap-1 mt-2">
           <span v-for="field in f.fields" :key="field.id" class="text-xs bg-gray-200 px-2 py-0.5 rounded">{{ field.type }}: {{ field.label.substring(0, 20) }}{{ field.label.length > 20 ? '...' : '' }}</span>
         </div>

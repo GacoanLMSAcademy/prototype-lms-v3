@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { classes, curricula, formAssessments, users, assessments, multiraterMethods, presentationMethods, validationMethods, skillTestMethods, verifyMethods } from '@/data/mockData'
+import { classes, curricula, formAssessments, users, assessments, trainingMethods } from '@/data/mockData'
 import type { FormScoreEntry } from '@/types'
 
 const route = useRoute()
@@ -19,14 +19,9 @@ interface CategoryWithForm { categoryId: string; categoryName: string; categoryW
 
 const categoriesWithForms = computed<CategoryWithForm[]>(() => {
   if (!item) return []
-  const type = item.trainingMethodType
   const cid = item.contentId
-  let cats: { id: string; name: string; weight: number; formAssessmentId: string }[] | undefined
-  if (type === 'multirater') cats = multiraterMethods.find(m => m.id === cid)?.categories
-  else if (type === 'presentation') cats = presentationMethods.find(m => m.id === cid)?.categories
-  else if (type === 'validation') cats = validationMethods.find(m => m.id === cid)?.categories
-  else if (type === 'skillTest') cats = skillTestMethods.find(m => m.id === cid)?.categories
-  else if (type === 'verify') cats = verifyMethods.find(m => m.id === cid)?.categories
+  const method = trainingMethods.find(m => m.id === cid)
+  const cats = method?.categories
   return (cats ?? []).map(c => {
     const form = formAssessments.find(f => f.id === c.formAssessmentId)
     return form ? { categoryId: c.id, categoryName: c.name, categoryWeight: c.weight, form } : undefined

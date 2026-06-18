@@ -2,21 +2,18 @@
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { classes, curricula, formAssessments, assessments, multiraterMethods, presentationMethods, validationMethods, skillTestMethods, verifyMethods } from '@/data/mockData'
+import { classes, curricula, formAssessments, assessments, trainingMethods, trainingMethodTypes } from '@/data/mockData'
 
 const auth = useAuthStore()
 const router = useRouter()
 const myClasses = classes.filter(c => c.raters.includes(auth.userId) || (c.assessmentAssessorAssignments ?? []).some(a => a.raterIds.includes(auth.userId)))
 
-const formMethodTypes = ['multirater', 'presentation', 'validation', 'skillTest', 'verify'] as const
+const formMethodTypes = trainingMethodTypes
+  .filter(t => !['inClass', 'knowledgeTest'].includes(t.name.toLowerCase().replace(/\s+/g, '')))
+  .map(t => t.name.toLowerCase().replace(/\s+/g, ''))
 
-function findMethodEntity(type: string, contentId: string) {
-  if (type === 'multirater') return multiraterMethods.find(m => m.id === contentId)
-  if (type === 'presentation') return presentationMethods.find(m => m.id === contentId)
-  if (type === 'validation') return validationMethods.find(m => m.id === contentId)
-  if (type === 'skillTest') return skillTestMethods.find(m => m.id === contentId)
-  if (type === 'verify') return verifyMethods.find(m => m.id === contentId)
-  return undefined
+function findMethodEntity(_type: string, contentId: string) {
+  return trainingMethods.find(m => m.id === contentId)
 }
 
 interface PendingItem { methodId: string; entityTitle: string; className: string; classId: string }

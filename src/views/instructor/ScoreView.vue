@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { classes, curricula, inClasses, tests, formAssessments, users, assessments, testAttempts, presentationMethods, skillTestMethods, verifyMethods, accountingMethods, materis } from '@/data/mockData'
+import { classes, curricula, inClasses, tests, formAssessments, users, assessments, testAttempts, trainingMethods, materis } from '@/data/mockData'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -12,17 +12,14 @@ const curriculum = curricula.find(c => c.id === cls?.curriculumId)
 // Group curriculum items by method type for tabbed scoring
 function findEntity(type: string, contentId: string) {
   if (type === 'inClass') return inClasses.find(ic => ic.id === contentId)
-  if (type === 'presentation') return presentationMethods.find(m => m.id === contentId)
-  if (type === 'skillTest') return skillTestMethods.find(m => m.id === contentId)
-  if (type === 'verify') return verifyMethods.find(m => m.id === contentId)
-  if (type === 'accounting') return accountingMethods.find(m => m.id === contentId)
-  return undefined
+  return trainingMethods.find(m => m.id === contentId)
 }
 
 const formScaledMethods = ['presentation', 'skillTest', 'verify'] as const
 const instructorMethods = curriculum?.items.filter(i => {
-  if (!['inClass', 'presentation', 'skillTest', 'verify', 'accounting'].includes(i.trainingMethodType)) return false
   if (i.trainingMethodType === 'inClass') return cls?.instructorId === auth.userId || (cls?.inClassInstructorAssignments ?? []).some(a => a.trainingMethodId === i.id && a.instructorId === auth.userId)
+  const m = trainingMethods.find(tm => tm.id === i.contentId)
+  if (!m) return false
   return cls?.instructorId === auth.userId
 }) ?? []
 
