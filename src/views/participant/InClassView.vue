@@ -4,10 +4,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import {
   classes,
-  curricula,
   inClasses,
   tests,
   materis,
+  materiTypes,
   testAttempts,
   inClassActivityCompletions,
   materiAccessTokens,
@@ -18,8 +18,6 @@ const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 
-// ── Resolve context from route ──
-// Route: /participant/inclass/:classId/:inClassId
 const classId = route.params.classId as string
 const inClassId = route.params.inClassId as string
 
@@ -29,6 +27,12 @@ const inClass = inClasses.find((ic) => ic.id === inClassId)
 // ── Active category tab ──
 const activeCatIndex = ref(0)
 const activeCategory = computed(() => inClass?.categories[activeCatIndex.value])
+
+// ── MateriType name ──
+function materiTypeName(id?: string) {
+  if (!id) return ''
+  return materiTypes.find((mt) => mt.id === id)?.name ?? ''
+}
 
 // ── Build ordered activity sequence for a category ──
 function buildActivities(categoryId: string): InClassActivity[] {
@@ -42,21 +46,43 @@ function buildActivities(categoryId: string): InClassActivity[] {
   return seq
 }
 
-// ── Check completion ──
-function isCompleted(categoryId: string, actType: InClassActivity['type'], refId: string): boolean {
-  // pre/post test: check testAttempts
-  if (actType === 'preTest' || actType === 'postTest') {
+// ── Category lock: locked if previous category not fully done AND no redeemed token ──
+function isCategoryUnlocked(catIndex: number): boolean {
+  if (catIndex === 0) return true // first category is always open
+  const cat = inClass!.categories[catIndex]!
+  // Check if a token exists and has been redeemed for this category
+  const tok = materiAccessTokens.find(
+    (t) =>
+      t.classId === classId &&
+      t.inClassId === inClassId &&
+      t.categoryId === cat.id &&
+      t.firstRedeemedAt, // redeemed = open for everyone
+  )
+  if (tok) return true
+  // Otherwise require previous category to be fully completed
+  const prevCat = inClass!.categories[catIndex - 1]!
+  return isCategoryComplete(prevCat.id)
+}
+
+// ── Category fully complete (all activities done) ──
+function isCategoryComplete(categoryId: string): boolean {
+  const acts = buildActivities(categoryId)
+  return acts.length > 0 && acts.every((a) => isActivityDone(categoryId, a.type, a.refId))
+}
+
+// ── Single activity completion check ──
+function isActivityDone(categoryId: string, type: InClassActivity['type'], refId: string): boolean {
+  if (type === 'preTest' || type === 'postTest') {
     return testAttempts.some(
       (a) =>
         a.participantId === auth.userId &&
         a.classId === classId &&
         a.inClassId === inClassId &&
         a.categoryId === categoryId &&
-        a.testType === actType &&
+        a.testType === type &&
         a.status === 'completed',
     )
   }
-  // materi: check inClassActivityCompletions
   return inClassActivityCompletions.some(
     (c) =>
       c.participantId === auth.userId &&
@@ -68,57 +94,31 @@ function isCompleted(categoryId: string, actType: InClassActivity['type'], refId
   )
 }
 
-// ── Check if activity is unlocked ──
-// An activity is unlocked if ALL previous activities in the sequence are completed,
-// OR if there's a valid (unused) access token for it.
-function isUnlocked(
+// ── Within an unlocked category, activities are still ordered ──
+// Activity N is accessible only if all activities 0..N-1 are done
+function isActivityUnlocked(
   activities: InClassActivity[],
   categoryId: string,
   activity: InClassActivity,
 ): boolean {
-  if (activity.order === 0) return true // first is always open
-  // check token
-  const hasToken = materiAccessTokens.some(
-    (t) =>
-      t.participantId === auth.userId &&
-      t.classId === classId &&
-      t.inClassId === inClassId &&
-      t.categoryId === categoryId &&
-      t.activityType === activity.type &&
-      t.refId === activity.refId &&
-      !t.usedAt,
-  )
-  if (hasToken) return true
-  // check all previous are completed
-  const prev = activities.filter((a) => a.order < activity.order)
-  return prev.every((a) => isCompleted(categoryId, a.type, a.refId))
+  if (activity.order === 0) return true
+  return activities
+    .filter((a) => a.order < activity.order)
+    .every((a) => isActivityDone(categoryId, a.type, a.refId))
 }
 
-// ── Mark materi as completed ──
-function completeMateri(categoryId: string, materiId: string) {
-  const alreadyDone = inClassActivityCompletions.some(
-    (c) =>
-      c.participantId === auth.userId &&
-      c.classId === classId &&
-      c.inClassId === inClassId &&
-      c.categoryId === categoryId &&
-      c.activityType === 'materi' &&
-      c.refId === materiId,
+// ── Category progress ──
+function catProgress(categoryId: string): number {
+  const acts = buildActivities(categoryId)
+  if (!acts.length) return 0
+  return Math.round(
+    (acts.filter((a) => isActivityDone(categoryId, a.type, a.refId)).length / acts.length) * 100,
   )
-  if (alreadyDone) return
-  // Consume access token if one was used
-  const token = materiAccessTokens.find(
-    (t) =>
-      t.participantId === auth.userId &&
-      t.classId === classId &&
-      t.inClassId === inClassId &&
-      t.categoryId === categoryId &&
-      t.activityType === 'materi' &&
-      t.refId === materiId &&
-      !t.usedAt,
-  )
-  if (token) token.usedAt = new Date().toISOString()
+}
 
+// ── Mark materi complete ──
+function completeMateri(categoryId: string, materiId: string) {
+  if (isActivityDone(categoryId, 'materi', materiId)) return
   inClassActivityCompletions.push({
     id: 'iac' + Date.now(),
     participantId: auth.userId,
@@ -131,70 +131,44 @@ function completeMateri(categoryId: string, materiId: string) {
   })
 }
 
-// ── Token unlock modal ──
+// ── Navigate to test ──
+function goToTest(categoryId: string, testId: string, testType: 'preTest' | 'postTest') {
+  const params = new URLSearchParams({ classId, inClassId, categoryId, testType })
+  router.push(`/participant/tests/${testId}/take?${params.toString()}`)
+}
+
+// ── Token entry modal (to unlock a locked category) ──
 const showTokenModal = ref(false)
 const tokenInput = ref('')
 const tokenError = ref('')
-const pendingActivity = ref<{ categoryId: string; activity: InClassActivity } | null>(null)
+const pendingCatId = ref('')
 
-function openTokenModal(categoryId: string, activity: InClassActivity) {
-  pendingActivity.value = { categoryId, activity }
+function openTokenModal(categoryId: string) {
+  pendingCatId.value = categoryId
   tokenInput.value = ''
   tokenError.value = ''
   showTokenModal.value = true
 }
 
 function redeemToken() {
-  if (!pendingActivity.value) return
-  const { categoryId, activity } = pendingActivity.value
   const match = materiAccessTokens.find(
     (t) =>
-      t.token.toUpperCase() === tokenInput.value.toUpperCase() &&
-      t.participantId === auth.userId &&
+      t.token.toUpperCase() === tokenInput.value.trim().toUpperCase() &&
       t.classId === classId &&
       t.inClassId === inClassId &&
-      t.categoryId === categoryId &&
-      t.activityType === activity.type &&
-      t.refId === activity.refId &&
-      !t.usedAt,
+      t.categoryId === pendingCatId.value,
   )
   if (!match) {
-    tokenError.value = 'Invalid or already used token. Check with your instructor.'
+    tokenError.value = 'Invalid token. Check with your instructor.'
     return
   }
-  match.usedAt = new Date().toISOString()
+  // Record first redemption (unlocks for everyone)
+  if (!match.firstRedeemedAt) {
+    match.firstRedeemedAt = new Date().toISOString()
+    match.firstRedeemedBy = auth.userId
+  }
   showTokenModal.value = false
-  // force reactivity refresh
   tokenInput.value = ''
-}
-
-// ── Navigate to test ──
-function goToTest(
-  categoryId: string,
-  testId: string,
-  testType: 'preTest' | 'postTest',
-  activity: InClassActivity,
-) {
-  // consume token if applicable
-  const token = materiAccessTokens.find(
-    (t) =>
-      t.participantId === auth.userId &&
-      t.classId === classId &&
-      t.inClassId === inClassId &&
-      t.categoryId === categoryId &&
-      t.activityType === testType &&
-      t.refId === testId &&
-      !t.usedAt,
-  )
-  if (token) token.usedAt = new Date().toISOString()
-
-  const params = new URLSearchParams({
-    classId,
-    inClassId,
-    categoryId,
-    testType,
-  })
-  router.push(`/participant/tests/${testId}/take?${params.toString()}`)
 }
 
 // ── Helpers ──
@@ -205,21 +179,13 @@ function materiTitle(id: string) {
   return materis.find((m) => m.id === id)?.title ?? id
 }
 function materiIcon(id: string) {
-  const type = materis.find((m) => m.id === id)?.type
-  return { pdf: '📄', slide: '📊', video: '🎬', h5p: '🎮' }[type ?? ''] ?? '📚'
+  const t = materis.find((m) => m.id === id)?.type
+  return { pdf: '📄', slide: '📊', video: '🎬', h5p: '🎮' }[t ?? ''] ?? '📚'
 }
-function activityLabel(a: InClassActivity) {
+function actLabel(a: InClassActivity) {
   if (a.type === 'preTest') return `Pre-Test: ${testTitle(a.refId)}`
   if (a.type === 'postTest') return `Post-Test: ${testTitle(a.refId)}`
   return `${materiIcon(a.refId)} ${materiTitle(a.refId)}`
-}
-
-// ── Category overall progress ──
-function catProgress(categoryId: string) {
-  const acts = buildActivities(categoryId)
-  if (!acts.length) return 0
-  const done = acts.filter((a) => isCompleted(categoryId, a.type, a.refId)).length
-  return Math.round((done / acts.length) * 100)
 }
 </script>
 
@@ -249,71 +215,121 @@ function catProgress(categoryId: string) {
           :key="cat.id"
           @click="activeCatIndex = idx"
           :class="[
-            'flex-shrink-0 px-4 py-2 rounded-xl text-sm font-medium border transition',
+            'flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border transition',
             activeCatIndex === idx
               ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300',
+              : isCategoryUnlocked(idx)
+                ? 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'
+                : 'bg-gray-100 text-gray-400 border-gray-200 cursor-default',
           ]"
         >
+          <span v-if="!isCategoryUnlocked(idx)">🔒</span>
           <span>{{ cat.name }}</span>
-          <span class="ml-2 text-xs opacity-75">{{ catProgress(cat.id) }}%</span>
+          <span class="text-xs opacity-75">{{ catProgress(cat.id) }}%</span>
         </button>
       </div>
 
-      <!-- Active category content -->
+      <!-- Active category -->
       <div v-if="activeCategory">
-        <!-- Progress bar -->
+        <!-- Category header card -->
         <div class="bg-white rounded-xl shadow p-4 mb-5">
-          <div class="flex items-center justify-between mb-2">
-            <p class="text-sm font-semibold text-gray-700">{{ activeCategory.name }}</p>
-            <span class="text-sm font-bold text-blue-600"
-              >{{ catProgress(activeCategory.id) }}%</span
-            >
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                <p class="text-sm font-semibold text-gray-700">{{ activeCategory.name }}</p>
+                <span
+                  v-if="activeCategory.materiTypeId"
+                  class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-full"
+                >
+                  {{ materiTypeName(activeCategory.materiTypeId) }}
+                </span>
+                <span class="text-xs text-gray-400">{{ activeCategory.weight }}%</span>
+              </div>
+              <div class="h-2 bg-gray-100 rounded-full overflow-hidden w-full">
+                <div
+                  class="h-full rounded-full transition-all duration-500"
+                  :class="catProgress(activeCategory.id) === 100 ? 'bg-green-500' : 'bg-blue-500'"
+                  :style="{ width: catProgress(activeCategory.id) + '%' }"
+                />
+              </div>
+              <p class="text-xs text-gray-400 mt-1">
+                {{ catProgress(activeCategory.id) }}% complete
+              </p>
+            </div>
+
+            <!-- Locked state: show Enter Token button -->
+            <div v-if="!isCategoryUnlocked(activeCatIndex)" class="shrink-0">
+              <button
+                @click="openTokenModal(activeCategory.id)"
+                class="text-sm bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 transition font-medium flex items-center gap-2"
+              >
+                🔑 Enter Token
+              </button>
+            </div>
           </div>
-          <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div
-              class="h-full bg-blue-500 rounded-full transition-all duration-500"
-              :style="{ width: catProgress(activeCategory.id) + '%' }"
-            />
-          </div>
-          <p class="text-xs text-gray-400 mt-1.5">Weight: {{ activeCategory.weight }}%</p>
         </div>
 
-        <!-- Activity ladder -->
-        <div class="relative">
+        <!-- Locked overlay -->
+        <div
+          v-if="!isCategoryUnlocked(activeCatIndex)"
+          class="bg-amber-50 border border-amber-200 rounded-xl p-6 text-center mb-5"
+        >
+          <p class="text-2xl mb-2">🔒</p>
+          <p class="font-semibold text-amber-800">This category is locked</p>
+          <p class="text-sm text-amber-600 mt-1">
+            Complete the previous category, or enter the access token from your instructor.
+          </p>
+          <button
+            @click="openTokenModal(activeCategory.id)"
+            class="mt-4 text-sm bg-amber-500 text-white px-5 py-2 rounded-lg hover:bg-amber-600 font-medium transition"
+          >
+            🔑 Enter Token to Unlock
+          </button>
+        </div>
+
+        <!-- Activity ladder (only shown when unlocked) -->
+        <div v-else class="relative">
           <div
             v-for="(activity, idx) in buildActivities(activeCategory.id)"
             :key="`${activeCategory.id}-${activity.refId}`"
-            class="relative flex gap-4 mb-0"
+            class="relative flex gap-4"
           >
             <!-- Connector column -->
             <div class="flex flex-col items-center w-10 shrink-0">
-              <!-- Circle -->
               <div
                 class="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 border-2 z-10 shadow-sm"
                 :class="
-                  isCompleted(activeCategory.id, activity.type, activity.refId)
+                  isActivityDone(activeCategory.id, activity.type, activity.refId)
                     ? 'bg-green-500 border-green-500 text-white'
-                    : isUnlocked(buildActivities(activeCategory.id), activeCategory.id, activity)
+                    : isActivityUnlocked(
+                          buildActivities(activeCategory.id),
+                          activeCategory.id,
+                          activity,
+                        )
                       ? 'bg-blue-500 border-blue-500 text-white'
                       : 'bg-gray-100 border-gray-300 text-gray-400'
                 "
               >
-                <span v-if="isCompleted(activeCategory.id, activity.type, activity.refId)">✓</span>
+                <span v-if="isActivityDone(activeCategory.id, activity.type, activity.refId)"
+                  >✓</span
+                >
                 <span
                   v-else-if="
-                    !isUnlocked(buildActivities(activeCategory.id), activeCategory.id, activity)
+                    !isActivityUnlocked(
+                      buildActivities(activeCategory.id),
+                      activeCategory.id,
+                      activity,
+                    )
                   "
-                  >🔒</span
+                  >○</span
                 >
                 <span v-else>{{ idx + 1 }}</span>
               </div>
-              <!-- Connector line -->
               <div
                 v-if="idx < buildActivities(activeCategory.id).length - 1"
                 class="w-0.5 flex-1 min-h-4 mt-1"
                 :class="
-                  isCompleted(activeCategory.id, activity.type, activity.refId)
+                  isActivityDone(activeCategory.id, activity.type, activity.refId)
                     ? 'bg-green-400'
                     : 'bg-gray-200'
                 "
@@ -325,17 +341,20 @@ function catProgress(categoryId: string) {
               <div
                 class="rounded-xl border-2 shadow-sm transition-all"
                 :class="
-                  isCompleted(activeCategory.id, activity.type, activity.refId)
+                  isActivityDone(activeCategory.id, activity.type, activity.refId)
                     ? 'bg-green-50 border-green-200'
-                    : isUnlocked(buildActivities(activeCategory.id), activeCategory.id, activity)
+                    : isActivityUnlocked(
+                          buildActivities(activeCategory.id),
+                          activeCategory.id,
+                          activity,
+                        )
                       ? 'bg-white border-blue-200'
-                      : 'bg-gray-50 border-gray-200 opacity-70'
+                      : 'bg-gray-50 border-gray-200 opacity-60'
                 "
               >
                 <div class="px-4 py-3 flex items-center justify-between gap-3">
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 flex-wrap mb-0.5">
-                      <!-- Type badge -->
                       <span
                         :class="[
                           'text-xs font-semibold px-2 py-0.5 rounded-full',
@@ -355,30 +374,27 @@ function catProgress(categoryId: string) {
                         }}
                       </span>
                       <span
-                        v-if="isCompleted(activeCategory.id, activity.type, activity.refId)"
+                        v-if="isActivityDone(activeCategory.id, activity.type, activity.refId)"
                         class="text-xs text-green-600 font-medium"
                         >✓ Done</span
                       >
                     </div>
                     <p class="text-sm font-semibold text-gray-800 truncate">
-                      {{ activityLabel(activity) }}
+                      {{ actLabel(activity) }}
                     </p>
                   </div>
 
-                  <!-- Action button -->
+                  <!-- Action -->
                   <div class="shrink-0">
-                    <!-- Completed -->
                     <span
-                      v-if="isCompleted(activeCategory.id, activity.type, activity.refId)"
+                      v-if="isActivityDone(activeCategory.id, activity.type, activity.refId)"
                       class="text-xs text-green-600 font-medium px-3 py-1.5 rounded-lg bg-green-50 border border-green-200"
                     >
                       Completed
                     </span>
-
-                    <!-- Unlocked — test -->
                     <button
                       v-else-if="
-                        isUnlocked(
+                        isActivityUnlocked(
                           buildActivities(activeCategory.id),
                           activeCategory.id,
                           activity,
@@ -390,18 +406,15 @@ function catProgress(categoryId: string) {
                           activeCategory.id,
                           activity.refId,
                           activity.type as 'preTest' | 'postTest',
-                          activity,
                         )
                       "
                       class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition font-medium"
                     >
                       Start Test
                     </button>
-
-                    <!-- Unlocked — materi -->
                     <button
                       v-else-if="
-                        isUnlocked(
+                        isActivityUnlocked(
                           buildActivities(activeCategory.id),
                           activeCategory.id,
                           activity,
@@ -412,15 +425,12 @@ function catProgress(categoryId: string) {
                     >
                       Mark Done
                     </button>
-
-                    <!-- Locked -->
-                    <button
+                    <span
                       v-else
-                      @click="openTokenModal(activeCategory.id, activity)"
-                      class="text-xs bg-gray-100 text-gray-500 border border-gray-200 hover:border-blue-300 hover:text-blue-600 px-3 py-1.5 rounded-lg transition"
+                      class="text-xs text-gray-400 px-3 py-1.5 rounded-lg bg-gray-100 border border-gray-200"
                     >
-                      🔒 Enter Token
-                    </button>
+                      Waiting…
+                    </span>
                   </div>
                 </div>
               </div>
@@ -430,7 +440,7 @@ function catProgress(categoryId: string) {
       </div>
     </template>
 
-    <!-- ── Token Modal ── -->
+    <!-- Token Modal -->
     <Teleport to="body">
       <div
         v-if="showTokenModal"
@@ -438,9 +448,9 @@ function catProgress(categoryId: string) {
         @click.self="showTokenModal = false"
       >
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6">
-          <h3 class="text-lg font-bold text-gray-800 mb-1">Enter Access Token</h3>
+          <h3 class="text-lg font-bold text-gray-800 mb-1">🔑 Enter Access Token</h3>
           <p class="text-sm text-gray-500 mb-4">
-            This activity is locked. Enter the token provided by your instructor to unlock it.
+            Enter the token from your instructor to unlock this category for everyone in the class.
           </p>
           <input
             v-model="tokenInput"

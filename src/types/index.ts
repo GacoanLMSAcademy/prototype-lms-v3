@@ -110,20 +110,20 @@ export interface InClassActivityCompletion {
   completedAt: string
 }
 
-// Admin-issued token that unlocks a specific materi (or test) for a participant
+// Admin-issued token that unlocks a whole MateriCategory for ALL participants in the class.
+// Lock is per MateriType (category). One token is shared with the entire class.
 export interface MateriAccessToken {
   id: string
-  token: string // short alphanumeric code, e.g. "TK-A4F2"
+  token: string // e.g. "TK-A4F2" — admin shares this code with the class
   classId: string
   inClassId: string
-  categoryId: string
-  participantId: string
-  activityType: InClassActivityType
-  refId: string // materiId or testId being unlocked
+  categoryId: string // the MateriCategory.id (which has a materiTypeId) being unlocked
   issuedBy: string // admin userId
   issuedAt: string
-  usedAt?: string // set when participant redeems it
   note?: string
+  // Tracking who first redeemed it (token stays active for all after first redemption)
+  firstRedeemedAt?: string
+  firstRedeemedBy?: string // participantId
 }
 
 // ── Training Method ──

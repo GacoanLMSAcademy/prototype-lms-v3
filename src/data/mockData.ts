@@ -1341,20 +1341,20 @@ export const inClassActivityCompletions: InClassActivityCompletion[] = [
 ]
 
 // ── Materi Access Tokens ──
-// Admin issued a token so u6 can skip to m2 in ic1/cat1 without finishing m1 first
+// Admin issues one token per category (materiType block). Shared with the whole class.
+// Once any participant redeems it, the category is unlocked for everyone.
 export const materiAccessTokens: MateriAccessToken[] = [
   {
     id: 'mat1',
     token: 'TK-B3D9',
     classId: 'cl1',
     inClassId: 'ic1',
-    categoryId: 'cat1',
-    participantId: 'u6',
-    activityType: 'materi',
-    refId: 'm2',
+    categoryId: 'cat2', // Praktik Komunikasi — unlocked for all participants
     issuedBy: 'u5',
     issuedAt: '2026-03-21T08:00:00Z',
-    note: 'Participant missed session 1 due to absence.',
+    note: 'Open access for Praktik Komunikasi session.',
+    firstRedeemedAt: '2026-03-21T09:00:00Z',
+    firstRedeemedBy: 'u1',
   },
 ]
 
