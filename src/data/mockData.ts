@@ -917,6 +917,17 @@ export const uploadedFiles: UploadedFile[] = [
     description: 'Laporan tugas upload file',
     submittedAt: '2026-04-16T14:30:00Z',
   },
+  {
+    id: 'uf3',
+    curriculumItemId: 'ci6',
+    participantId: 'u1',
+    classId: 'cl1',
+    fileType: 'pdf',
+    fileName: 'Sertifikat_Pelatihan.pdf',
+    fileUrl: 'https://drive.google.com/file/d/example-cert',
+    description: 'Sertifikat pelatihan eksternal',
+    submittedAt: '2026-04-17T09:00:00Z',
+  },
 ]
 
 // ── Knowledge Test Classes (screening) ──
@@ -964,7 +975,15 @@ export const curricula: Curriculum[] = [
         order: 3,
         trainingMethodType: 'uploadFile',
         contentId: 'Upload Portofolio Tugas Akhir',
-        weight: 10,
+        weight: 5,
+        passingScore: 0,
+      },
+      {
+        id: 'ci6',
+        order: 4,
+        trainingMethodType: 'uploadFile',
+        contentId: 'Upload Sertifikat Pelatihan',
+        weight: 5,
         passingScore: 0,
       },
     ],

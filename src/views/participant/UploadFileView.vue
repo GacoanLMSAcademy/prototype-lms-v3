@@ -47,6 +47,10 @@ const myUploads = computed(() =>
   allUploadedFiles.filter(f => f.participantId === auth.userId)
 )
 
+function getFormMeta(f: UploadForm) {
+  return pendingUploads.value.find(p => p.curriculumItemId === f.curriculumItemId && p.classId === f.classId)
+}
+
 function submitUpload(f: UploadForm) {
   allUploadedFiles.push({
     id: 'uf' + Date.now(),
@@ -90,51 +94,56 @@ function uploadedTaskName(uf: typeof allUploadedFiles[number]) {
   <div>
     <h2 class="text-2xl font-bold mb-6">Upload File</h2>
 
-    <h3 class="font-semibold mb-3">Tugas Upload File</h3>
-    <div v-if="pendingUploads.length === 0" class="text-gray-400 text-sm mb-6">Tidak ada tugas upload file yang perlu dikerjakan</div>
-    <div v-for="f in forms" :key="f.curriculumItemId + f.classId" class="bg-white rounded shadow p-4 mb-4 max-w-2xl">
-      <p class="font-medium mb-1">{{ pendingUploads.find(p => p.curriculumItemId === f.curriculumItemId && p.classId === f.classId)?.taskName ?? 'Upload File' }}</p>
-      <p class="text-xs text-gray-500 mb-3">{{ pendingUploads.find(p => p.curriculumItemId === f.curriculumItemId && p.classId === f.classId)?.className ?? '' }}</p>
-      <div class="space-y-3">
-        <div>
-          <label class="text-xs font-medium">File Type</label>
-          <select v-model="f.fileType" class="w-full border rounded px-3 py-2 text-sm">
-            <option value="slide">Slide</option>
-            <option value="pdf">PDF</option>
-            <option value="video">Video</option>
-            <option value="link">Link</option>
-            <option value="other">Other</option>
-          </select>
-        </div>
-        <div>
-          <label class="text-xs font-medium">File Name</label>
-          <input v-model="f.fileName" class="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. Laporan_Tugas.pdf" />
-        </div>
-        <div>
-          <label class="text-xs font-medium">File URL / Link</label>
-          <input v-model="f.fileUrl" class="w-full border rounded px-3 py-2 text-sm" placeholder="https://drive.google.com/file/d/..." />
-        </div>
-        <div>
-          <label class="text-xs font-medium">Description</label>
-          <textarea v-model="f.description" class="w-full border rounded px-3 py-2 text-sm" rows="2" placeholder="Deskripsi file yang diupload" />
-        </div>
-        <button @click="submitUpload(f)" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm" :disabled="!f.fileName || !f.fileUrl">Upload</button>
-      </div>
-    </div>
+    <div class="bg-white rounded shadow p-4 mb-6 max-w-2xl">
+      <p class="font-semibold text-lg mb-4">{{ auth.userName }}</p>
 
-    <h3 class="font-semibold mb-3 mt-8">Riwayat Upload</h3>
-    <div v-if="myUploads.length === 0" class="text-gray-400 text-sm">Belum ada upload</div>
-    <div v-for="uf in myUploads" :key="uf.id" class="bg-white rounded shadow p-4 mb-3 max-w-2xl">
-      <div class="flex items-center justify-between mb-1">
-        <div>
-          <p class="font-medium text-sm">{{ uf.fileName }}</p>
-          <p class="text-xs text-gray-500">{{ uploadedTaskName(uf) }} — {{ uploadedClassName(uf) }}</p>
+      <h3 class="font-semibold mb-3">Tugas Upload File</h3>
+      <div v-if="forms.length === 0" class="text-gray-400 text-sm mb-2">Tidak ada tugas upload file yang perlu dikerjakan</div>
+      <div v-for="f in forms" :key="f.curriculumItemId + f.classId" class="border-t py-3 first:border-t-0 first:pt-0">
+        <p class="font-medium mb-1">{{ getFormMeta(f)?.taskName ?? 'Upload File' }}</p>
+        <p class="text-xs text-gray-500 mb-3">{{ getFormMeta(f)?.className ?? '' }}</p>
+        <div class="space-y-3 ml-2">
+          <div>
+            <label class="text-xs font-medium">File Type</label>
+            <select v-model="f.fileType" class="w-full border rounded px-3 py-2 text-sm">
+              <option value="slide">Slide</option>
+              <option value="pdf">PDF</option>
+              <option value="video">Video</option>
+              <option value="link">Link</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-medium">File Name</label>
+            <input v-model="f.fileName" class="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. Laporan_Tugas.pdf" />
+          </div>
+          <div>
+            <label class="text-xs font-medium">File URL / Link</label>
+            <input v-model="f.fileUrl" class="w-full border rounded px-3 py-2 text-sm" placeholder="https://drive.google.com/file/d/..." />
+          </div>
+          <div>
+            <label class="text-xs font-medium">Description</label>
+            <textarea v-model="f.description" class="w-full border rounded px-3 py-2 text-sm" rows="2" placeholder="Deskripsi file yang diupload" />
+          </div>
+          <button @click="submitUpload(f)" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm" :disabled="!f.fileName || !f.fileUrl">Upload</button>
         </div>
-        <span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700 capitalize">{{ uf.fileType }}</span>
       </div>
-      <a v-if="uf.fileUrl" :href="uf.fileUrl" target="_blank" class="text-blue-600 text-xs hover:underline">Lihat file</a>
-      <p class="text-xs text-gray-400 mt-1">{{ uf.description }}</p>
-      <p class="text-xs text-gray-400 mt-1">{{ new Date(uf.submittedAt).toLocaleDateString() }}</p>
+
+      <h3 class="font-semibold mb-3 mt-6">Riwayat Upload</h3>
+      <div v-if="myUploads.length === 0" class="text-gray-400 text-sm">Belum ada upload</div>
+      <div v-for="uf in myUploads" :key="uf.id" class="border-t py-3">
+        <p class="font-medium text-sm mb-1">{{ uploadedTaskName(uf) }}</p>
+        <p class="text-xs text-gray-500 mb-2">{{ uploadedClassName(uf) }}</p>
+        <div class="ml-2">
+          <div class="flex items-center justify-between mb-1">
+            <p class="font-medium text-sm">{{ uf.fileName }}</p>
+            <span class="text-xs px-2 py-0.5 rounded bg-green-100 text-green-700 capitalize">{{ uf.fileType }}</span>
+          </div>
+          <a v-if="uf.fileUrl" :href="uf.fileUrl" target="_blank" class="text-blue-600 text-xs hover:underline">Lihat file</a>
+          <p class="text-xs text-gray-400 mt-1">{{ uf.description }}</p>
+          <p class="text-xs text-gray-400 mt-1">{{ new Date(uf.submittedAt).toLocaleDateString() }}</p>
+        </div>
+      </div>
     </div>
   </div>
 </template>
