@@ -235,6 +235,11 @@ const routes = [
         name: 'admin-uploads',
         component: () => import('@/views/admin/UploadsView.vue'),
       },
+      {
+        path: 'inclass-retake',
+        name: 'admin-inclass-retake',
+        component: () => import('@/views/admin/InClassRetakeView.vue'),
+      },
     ],
   },
   // ── Instructor (read-only + scoring) ──

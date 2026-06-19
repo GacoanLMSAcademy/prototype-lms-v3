@@ -285,6 +285,10 @@ export interface TestAttempt {
   testId: string
   participantId: string
   classId: string
+  inClassId?: string // which InClass this belongs to (for pre/post tests)
+  categoryId?: string // which MateriCategory this belongs to
+  testType?: 'preTest' | 'postTest' | 'remedial' // context of the attempt
+  attemptNumber?: number // 1 = original, 2+ = retake
   answers: Answer[]
   score: number
   totalPoints: number
@@ -292,6 +296,21 @@ export interface TestAttempt {
   startedAt: string
   completedAt?: string
   status: 'inProgress' | 'completed' | 'expired'
+}
+
+// ── InClass Test Retake Permission ──
+export interface InClassRetakePermission {
+  id: string
+  classId: string
+  inClassId: string
+  categoryId: string
+  participantId: string
+  testId: string
+  testType: 'preTest' | 'postTest'
+  grantedBy: string // admin userId
+  grantedAt: string
+  usedAt?: string // set when the participant actually retakes
+  note?: string
 }
 
 // ── Scoring Contract ──
