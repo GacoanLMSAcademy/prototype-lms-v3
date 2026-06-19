@@ -8,8 +8,16 @@ const router = useRouter()
 const route = useRoute()
 const assessmentMethodsOpen = ref(true)
 
-interface NavItem { label: string; to: string; icon: string }
-interface NavGroup { label: string; icon: string; children: NavItem[] }
+interface NavItem {
+  label: string
+  to: string
+  icon: string
+}
+interface NavGroup {
+  label: string
+  icon: string
+  children: NavItem[]
+}
 
 type MenuEntry = NavItem | NavGroup
 
@@ -23,6 +31,7 @@ const navItems = computed<MenuEntry[]>(() => {
       { label: 'Materi Types', to: '/admin/materi-type', icon: '📦' },
       { label: 'In-Class', to: '/admin/inclass', icon: '🏫' },
       { label: 'Form Builder', to: '/admin/form-builder', icon: '📋' },
+      { label: 'Section Types', to: '/admin/section-types', icon: '🗂️' },
       { label: 'Program Categories', to: '/admin/program-category', icon: '📂' },
       { label: 'Program Types', to: '/admin/program-type', icon: '📁' },
       { label: 'Training Method Types', to: '/admin/category-training-method', icon: '🏷️' },
@@ -90,23 +99,38 @@ function goTo(to: string) {
     </div>
     <nav class="flex-1 p-2 space-y-1 overflow-y-auto">
       <template v-for="item in navItems" :key="isNavGroup(item) ? item.label : item.to">
-        <button v-if="!isNavGroup(item)" @click="goTo(item.to)"
+        <button
+          v-if="!isNavGroup(item)"
+          @click="goTo(item.to)"
           class="w-full text-left px-3 py-2 rounded-md text-sm flex items-center gap-2 transition-colors"
-          :class="isActive(item.to) ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'">
+          :class="isActive(item.to) ? 'bg-blue-600 text-white' : 'text-gray-300 hover:bg-gray-700'"
+        >
           <span>{{ item.icon }}</span>
           <span>{{ item.label }}</span>
         </button>
         <div v-else>
-          <button @click="assessmentMethodsOpen = !assessmentMethodsOpen"
-            class="w-full text-left px-3 py-2 rounded-md text-sm flex items-center gap-2 text-gray-300 hover:bg-gray-700 transition-colors">
+          <button
+            @click="assessmentMethodsOpen = !assessmentMethodsOpen"
+            class="w-full text-left px-3 py-2 rounded-md text-sm flex items-center gap-2 text-gray-300 hover:bg-gray-700 transition-colors"
+          >
             <span>{{ item.icon }}</span>
             <span class="flex-1">{{ item.label }}</span>
-            <span class="text-xs transition-transform" :class="assessmentMethodsOpen ? 'rotate-90' : ''">▶</span>
+            <span
+              class="text-xs transition-transform"
+              :class="assessmentMethodsOpen ? 'rotate-90' : ''"
+              >▶</span
+            >
           </button>
           <div v-show="assessmentMethodsOpen" class="ml-3 space-y-1 mt-1">
-            <button v-for="child in item.children" :key="child.to" @click="goTo(child.to)"
+            <button
+              v-for="child in item.children"
+              :key="child.to"
+              @click="goTo(child.to)"
               class="w-full text-left px-3 py-1.5 rounded-md text-xs flex items-center gap-2 transition-colors"
-              :class="isActive(child.to) ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700'">
+              :class="
+                isActive(child.to) ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-700'
+              "
+            >
               <span>{{ child.icon }}</span>
               <span>{{ child.label }}</span>
             </button>
