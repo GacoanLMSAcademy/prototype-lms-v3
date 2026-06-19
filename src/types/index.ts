@@ -149,11 +149,23 @@ export interface SectionTypeEntity {
 }
 
 // ── Form Section System ──
+export type FormItemType = 'multiple_choice' | 'true_false' | 'scale' | 'free_text'
+
 export interface FormSectionItem {
   id: string
   label: string
+  itemType: FormItemType
   weight: number
   point: number
+  // multiple_choice options
+  options?: string[]
+  correctOption?: number // index into options
+  // scale config
+  scaleMin?: number
+  scaleMax?: number
+  scaleStep?: number
+  // true_false correct answer
+  correctTrueFalse?: boolean
 }
 
 export interface FormSection {

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { formAssessments, trainingMethodTypes, sectionTypes } from '@/data/mockData'
-import type { FormSection, FormSectionItem } from '@/types'
+import type { FormSection, FormSectionItem, FormItemType } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -15,8 +15,19 @@ const title = ref(existing?.title ?? '')
 const description = ref(existing?.description ?? '')
 const typeId = ref(existing?.typeId ?? '')
 
-// ── Section types config ──
+// ── Section types ──
 const sectionTypeOptions = computed(() => sectionTypes.map((s) => ({ value: s.id, label: s.name })))
+
+// ── Item type config ──
+const itemTypeOptions: { value: FormItemType; label: string; icon: string }[] = [
+  { value: 'multiple_choice', label: 'Multiple Choice', icon: '☑' },
+  { value: 'true_false', label: 'True / False', icon: '◑' },
+  { value: 'scale', label: 'Scale', icon: '⊟' },
+  { value: 'free_text', label: 'Free Text', icon: '✎' },
+]
+function itemTypeIcon(t: FormItemType) {
+  return itemTypeOptions.find((o) => o.value === t)?.icon ?? '?'
+}
 
 // ── Sections state ──
 function createSection(index: number): FormSection {
@@ -30,7 +41,7 @@ function createSection(index: number): FormSection {
 }
 
 function createItem(): FormSectionItem {
-  return { id: crypto.randomUUID(), label: '', weight: 0, point: 0 }
+  return { id: crypto.randomUUID(), label: '', itemType: 'free_text', weight: 0, point: 0 }
 }
 
 const initialSections: FormSection[] =
@@ -41,9 +52,7 @@ const activeIndex = ref(0)
 const slideDirection = ref<'left' | 'right'>('right')
 const isAnimating = ref(false)
 
-// ── Computed ──
 const totalWeight = computed(() => sections.value.reduce((sum, s) => sum + (s.weight || 0), 0))
-
 const activeSection = computed(() => sections.value[activeIndex.value])
 
 // ── Navigation ──
@@ -56,47 +65,64 @@ function goTo(index: number) {
     isAnimating.value = false
   }, 320)
 }
-
 function goPrev() {
   if (activeIndex.value > 0) goTo(activeIndex.value - 1)
 }
-
 function goNext() {
   if (activeIndex.value < sections.value.length - 1) goTo(activeIndex.value + 1)
 }
 
-// ── Section management ──
 function addSection() {
-  const newSection = createSection(sections.value.length + 1)
-  sections.value.push(newSection)
+  sections.value.push(createSection(sections.value.length + 1))
   goTo(sections.value.length - 1)
 }
-
 function removeSection(index: number) {
   if (sections.value.length <= 1) return
   sections.value.splice(index, 1)
-  if (activeIndex.value >= sections.value.length) {
-    activeIndex.value = sections.value.length - 1
-  }
+  if (activeIndex.value >= sections.value.length) activeIndex.value = sections.value.length - 1
 }
 
-// ── Item management ──
 function addItem(section: FormSection) {
   section.items.push(createItem())
 }
-
-function removeItem(section: FormSection, itemIndex: number) {
-  section.items.splice(itemIndex, 1)
+function removeItem(section: FormSection, idx: number) {
+  section.items.splice(idx, 1)
 }
 
-// ── Save ──
+// ── Item type change: reset type-specific fields ──
+function onItemTypeChange(item: FormSectionItem) {
+  item.options = undefined
+  item.correctOption = undefined
+  item.correctTrueFalse = undefined
+  item.scaleMin = undefined
+  item.scaleMax = undefined
+  item.scaleStep = undefined
+  if (item.itemType === 'multiple_choice') {
+    item.options = ['', '']
+    item.correctOption = 0
+  } else if (item.itemType === 'true_false') {
+    item.correctTrueFalse = true
+  } else if (item.itemType === 'scale') {
+    item.scaleMin = 1
+    item.scaleMax = 5
+    item.scaleStep = 1
+  }
+}
+
+function addOption(item: FormSectionItem) {
+  if (!item.options) item.options = []
+  item.options.push('')
+}
+function removeOption(item: FormSectionItem, idx: number) {
+  if (!item.options) return
+  item.options.splice(idx, 1)
+  if ((item.correctOption ?? 0) >= item.options.length)
+    item.correctOption = Math.max(0, item.options.length - 1)
+}
+
 function save() {
   if (!title.value.trim()) {
     alert('Form title is required')
-    return
-  }
-  if (sections.value.length === 0) {
-    alert('At least one section is required')
     return
   }
   alert('Form saved (mock)')
@@ -125,7 +151,7 @@ function save() {
       </div>
     </div>
 
-    <!-- Top-level form metadata -->
+    <!-- Form metadata -->
     <div class="bg-white rounded-xl shadow p-6 mb-6 space-y-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Form Title</label>
@@ -139,8 +165,8 @@ function save() {
         <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
         <textarea
           v-model="description"
-          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           rows="2"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Form description..."
         />
       </div>
@@ -158,7 +184,7 @@ function save() {
 
     <!-- Section builder -->
     <div class="bg-white rounded-xl shadow overflow-hidden">
-      <!-- Section tabs + Add Section button -->
+      <!-- Section tabs -->
       <div
         class="border-b border-gray-200 bg-gray-50 px-4 pt-3 pb-0 flex items-end gap-2 overflow-x-auto"
       >
@@ -177,16 +203,14 @@ function save() {
         </button>
         <button
           @click="addSection"
-          class="px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-t-lg border border-transparent whitespace-nowrap flex items-center gap-1 mb-0 self-end"
+          class="px-3 py-2 text-sm text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-t-lg border border-transparent whitespace-nowrap flex items-center gap-1 self-end"
         >
-          <span class="text-lg leading-none">+</span>
-          <span>Add Section</span>
+          <span class="text-lg leading-none">+</span><span>Add Section</span>
         </button>
       </div>
 
-      <!-- Navigation arrows + section viewport -->
+      <!-- Section viewport with slide transition -->
       <div class="relative overflow-hidden">
-        <!-- Prev / Next arrows -->
         <button
           @click="goPrev"
           :disabled="activeIndex === 0"
@@ -212,7 +236,6 @@ function save() {
           →
         </button>
 
-        <!-- Section panels with slide transition -->
         <div class="overflow-hidden">
           <Transition
             :name="slideDirection === 'right' ? 'slide-left' : 'slide-right'"
@@ -235,7 +258,6 @@ function save() {
 
               <!-- Section fields -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
-                <!-- Section Title -->
                 <div class="md:col-span-2">
                   <label class="block text-sm font-medium text-gray-700 mb-1">Section Name</label>
                   <input
@@ -244,7 +266,6 @@ function save() {
                     placeholder="e.g. Reading Comprehension"
                   />
                 </div>
-                <!-- Section Type -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Section Type</label>
                   <div class="flex gap-2">
@@ -261,18 +282,10 @@ function save() {
                       href="/admin/section-types/new"
                       target="_blank"
                       class="text-xs text-blue-600 hover:text-blue-800 border border-blue-200 hover:border-blue-400 px-2.5 py-2 rounded-lg transition whitespace-nowrap flex items-center"
-                      title="Manage section types"
+                      >+ Type</a
                     >
-                      + Type
-                    </a>
                   </div>
-                  <p v-if="sectionTypeOptions.length === 0" class="text-xs text-orange-500 mt-1">
-                    No section types defined yet.
-                    <a href="/admin/section-types/new" target="_blank" class="underline">Add one</a
-                    >.
-                  </p>
                 </div>
-                <!-- Section Weight -->
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Section Weight</label>
                   <input
@@ -299,28 +312,57 @@ function save() {
 
                 <div
                   v-if="activeSection.items.length === 0"
-                  class="text-sm text-gray-400 italic py-4 text-center border border-dashed border-gray-200 rounded-lg"
+                  class="text-sm text-gray-400 italic py-6 text-center border border-dashed border-gray-200 rounded-lg"
                 >
                   No items yet. Click "Add Item" to get started.
                 </div>
 
+                <!-- ── Item card ── -->
                 <div
                   v-for="(item, itemIdx) in activeSection.items"
                   :key="item.id"
-                  class="border border-gray-200 rounded-lg p-4 mb-3 bg-gray-50 hover:bg-white transition"
+                  class="border border-gray-200 rounded-xl p-4 mb-3 bg-gray-50 hover:bg-white transition"
                 >
-                  <div class="flex items-center justify-between mb-3">
-                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                      Item {{ itemIdx + 1 }}
-                    </span>
+                  <!-- Item header: number + type picker + remove -->
+                  <div class="flex items-center justify-between mb-3 gap-2">
+                    <span
+                      class="text-xs font-semibold text-gray-400 uppercase tracking-wide shrink-0"
+                      >Item {{ itemIdx + 1 }}</span
+                    >
+
+                    <!-- Item type segmented picker -->
+                    <div class="flex items-center gap-1 flex-wrap">
+                      <button
+                        v-for="opt in itemTypeOptions"
+                        :key="opt.value"
+                        @click="
+                          () => {
+                            item.itemType = opt.value
+                            onItemTypeChange(item)
+                          }
+                        "
+                        :class="[
+                          'text-xs px-2.5 py-1 rounded-full border transition font-medium flex items-center gap-1',
+                          item.itemType === opt.value
+                            ? 'bg-blue-600 text-white border-blue-600'
+                            : 'bg-white text-gray-500 border-gray-200 hover:border-blue-300 hover:text-blue-600',
+                        ]"
+                      >
+                        <span>{{ opt.icon }}</span>
+                        <span>{{ opt.label }}</span>
+                      </button>
+                    </div>
+
                     <button
                       @click="removeItem(activeSection, itemIdx)"
-                      class="text-xs text-red-400 hover:text-red-600 transition"
+                      class="text-xs text-red-400 hover:text-red-600 transition shrink-0"
                     >
                       Remove
                     </button>
                   </div>
-                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                  <!-- Question label + weight/point -->
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                     <div class="md:col-span-3">
                       <label class="block text-xs font-medium text-gray-600 mb-1"
                         >Question / Label</label
@@ -332,9 +374,7 @@ function save() {
                       />
                     </div>
                     <div>
-                      <label class="block text-xs font-medium text-gray-600 mb-1"
-                        >Item Weight</label
-                      >
+                      <label class="block text-xs font-medium text-gray-600 mb-1">Weight</label>
                       <input
                         v-model.number="item.weight"
                         type="number"
@@ -344,7 +384,7 @@ function save() {
                       />
                     </div>
                     <div>
-                      <label class="block text-xs font-medium text-gray-600 mb-1">Item Point</label>
+                      <label class="block text-xs font-medium text-gray-600 mb-1">Point</label>
                       <input
                         v-model.number="item.point"
                         type="number"
@@ -366,7 +406,178 @@ function save() {
                       </div>
                     </div>
                   </div>
+
+                  <!-- ── Type-specific config ── -->
+
+                  <!-- Multiple Choice -->
+                  <div
+                    v-if="item.itemType === 'multiple_choice'"
+                    class="border border-gray-200 rounded-lg p-3 bg-white space-y-2"
+                  >
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      Answer Options
+                    </p>
+                    <div
+                      v-for="(opt, oi) in item.options ?? []"
+                      :key="oi"
+                      class="flex items-center gap-2"
+                    >
+                      <!-- correct radio -->
+                      <button
+                        @click="item.correctOption = oi"
+                        :class="[
+                          'w-4 h-4 rounded-full border-2 shrink-0 transition',
+                          item.correctOption === oi
+                            ? 'bg-green-500 border-green-500'
+                            : 'border-gray-300 hover:border-green-400',
+                        ]"
+                        title="Mark as correct"
+                      />
+                      <input
+                        :value="opt"
+                        @input="
+                          (e) => {
+                            if (item.options)
+                              item.options[oi] = (e.target as HTMLInputElement).value
+                          }
+                        "
+                        class="flex-1 border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        :placeholder="`Option ${oi + 1}`"
+                      />
+                      <button
+                        @click="removeOption(item, oi)"
+                        class="text-gray-300 hover:text-red-400 transition text-base leading-none shrink-0"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <button
+                      @click="addOption(item)"
+                      class="text-xs text-blue-600 hover:text-blue-800 border border-dashed border-blue-200 hover:border-blue-400 px-3 py-1.5 rounded-lg w-full transition"
+                    >
+                      + Add Option
+                    </button>
+                    <p class="text-xs text-gray-400">
+                      Click the circle to mark the correct answer.
+                    </p>
+                  </div>
+
+                  <!-- True / False -->
+                  <div
+                    v-else-if="item.itemType === 'true_false'"
+                    class="border border-gray-200 rounded-lg p-3 bg-white"
+                  >
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      Correct Answer
+                    </p>
+                    <div class="flex gap-3">
+                      <button
+                        @click="item.correctTrueFalse = true"
+                        :class="[
+                          'flex-1 py-2 rounded-lg border-2 text-sm font-medium transition',
+                          item.correctTrueFalse === true
+                            ? 'bg-green-50 border-green-500 text-green-700'
+                            : 'border-gray-200 text-gray-500 hover:border-green-300',
+                        ]"
+                      >
+                        ✓ True
+                      </button>
+                      <button
+                        @click="item.correctTrueFalse = false"
+                        :class="[
+                          'flex-1 py-2 rounded-lg border-2 text-sm font-medium transition',
+                          item.correctTrueFalse === false
+                            ? 'bg-red-50 border-red-400 text-red-700'
+                            : 'border-gray-200 text-gray-500 hover:border-red-300',
+                        ]"
+                      >
+                        ✕ False
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Scale -->
+                  <div
+                    v-else-if="item.itemType === 'scale'"
+                    class="border border-gray-200 rounded-lg p-3 bg-white"
+                  >
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                      Scale Config
+                    </p>
+                    <div class="grid grid-cols-3 gap-3">
+                      <div>
+                        <label class="block text-xs text-gray-500 mb-1">Min</label>
+                        <input
+                          v-model.number="item.scaleMin"
+                          type="number"
+                          class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="1"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-gray-500 mb-1">Max</label>
+                        <input
+                          v-model.number="item.scaleMax"
+                          type="number"
+                          class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="5"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-xs text-gray-500 mb-1">Step</label>
+                        <input
+                          v-model.number="item.scaleStep"
+                          type="number"
+                          min="1"
+                          class="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="1"
+                        />
+                      </div>
+                    </div>
+                    <!-- Preview -->
+                    <div class="mt-3 flex items-center gap-2 flex-wrap">
+                      <span class="text-xs text-gray-400">Preview:</span>
+                      <template
+                        v-for="n in Math.min(
+                          10,
+                          Math.floor(
+                            ((item.scaleMax ?? 5) - (item.scaleMin ?? 1)) / (item.scaleStep ?? 1),
+                          ) + 1,
+                        )"
+                        :key="n"
+                      >
+                        <span
+                          class="w-8 h-8 rounded-full border-2 border-gray-200 bg-white flex items-center justify-center text-xs text-gray-600"
+                        >
+                          {{ (item.scaleMin ?? 1) + (n - 1) * (item.scaleStep ?? 1) }}
+                        </span>
+                      </template>
+                      <span
+                        v-if="
+                          Math.floor(
+                            ((item.scaleMax ?? 5) - (item.scaleMin ?? 1)) / (item.scaleStep ?? 1),
+                          ) +
+                            1 >
+                          10
+                        "
+                        class="text-xs text-gray-400"
+                        >…</span
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Free Text -->
+                  <div
+                    v-else-if="item.itemType === 'free_text'"
+                    class="border border-dashed border-gray-200 rounded-lg p-3 bg-white"
+                  >
+                    <p class="text-xs text-gray-400 italic flex items-center gap-1.5">
+                      <span>✎</span> Respondent will type a free-text answer. No extra config
+                      needed.
+                    </p>
+                  </div>
                 </div>
+                <!-- /item card -->
 
                 <!-- Items summary -->
                 <div
@@ -374,8 +585,8 @@ function save() {
                   class="mt-2 flex gap-4 text-xs text-gray-500"
                 >
                   <span>{{ activeSection.items.length }} item(s)</span>
-                  <span>
-                    Total item weight:
+                  <span
+                    >Total weight:
                     <strong
                       :class="
                         activeSection.items.reduce((s, i) => s + (i.weight || 0), 0) === 100
@@ -393,9 +604,8 @@ function save() {
         </div>
       </div>
 
-      <!-- Footer summary -->
+      <!-- Footer -->
       <div class="border-t border-gray-100 bg-gray-50 px-6 py-4 flex flex-wrap items-center gap-4">
-        <!-- Section dots indicator -->
         <div class="flex gap-1.5">
           <button
             v-for="(_, idx) in sections"
@@ -407,10 +617,7 @@ function save() {
             ]"
           />
         </div>
-
         <div class="flex-1" />
-
-        <!-- Total weight display -->
         <div class="flex items-center gap-2">
           <span class="text-sm text-gray-600">Total Form Weight:</span>
           <span
@@ -424,13 +631,11 @@ function save() {
             ]"
           >
             {{ totalWeight }}%
-            <span v-if="totalWeight === 100" class="ml-1">✓</span>
-            <span v-else-if="totalWeight > 100" class="ml-1">↑ over</span>
-            <span v-else class="ml-1">↓ under</span>
+            <span v-if="totalWeight === 100">✓</span>
+            <span v-else-if="totalWeight > 100">↑ over</span>
+            <span v-else>↓ under</span>
           </span>
         </div>
-
-        <!-- Per-section weights mini summary -->
         <div class="w-full mt-1 flex flex-wrap gap-2">
           <div
             v-for="(section, idx) in sections"
@@ -452,7 +657,6 @@ function save() {
 </template>
 
 <style scoped>
-/* Slide from left (going backwards) */
 .slide-right-enter-active,
 .slide-right-leave-active,
 .slide-left-enter-active,
@@ -462,8 +666,6 @@ function save() {
     opacity 0.28s ease;
   position: relative;
 }
-
-/* slide-left: new section comes from the right (forward navigation) */
 .slide-left-enter-from {
   transform: translateX(60px);
   opacity: 0;
@@ -480,8 +682,6 @@ function save() {
   transform: translateX(-60px);
   opacity: 0;
 }
-
-/* slide-right: new section comes from the left (backward navigation) */
 .slide-right-enter-from {
   transform: translateX(-60px);
   opacity: 0;
