@@ -22,6 +22,8 @@ import type {
   UploadedFile,
   SectionTypeEntity,
   InClassRetakePermission,
+  InClassActivityCompletion,
+  MateriAccessToken,
 } from '@/types'
 
 // ── Users (5 roles) ──
@@ -1290,6 +1292,69 @@ export const inClassRetakePermissions: InClassRetakePermission[] = [
     grantedBy: 'u5',
     grantedAt: '2026-03-25T08:00:00Z',
     note: 'Participant scored below 70. Permitted one retake.',
+  },
+]
+
+// ── InClass Activity Completions ──
+// u1 has completed: pre-test cat1, materi m1, materi m2 in ic1/cat1
+export const inClassActivityCompletions: InClassActivityCompletion[] = [
+  {
+    id: 'iac1',
+    participantId: 'u1',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    activityType: 'preTest',
+    refId: 't1',
+    completedAt: '2026-03-20T09:25:00Z',
+  },
+  {
+    id: 'iac2',
+    participantId: 'u1',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    activityType: 'materi',
+    refId: 'm1',
+    completedAt: '2026-03-20T10:00:00Z',
+  },
+  {
+    id: 'iac3',
+    participantId: 'u1',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    activityType: 'materi',
+    refId: 'm2',
+    completedAt: '2026-03-20T10:30:00Z',
+  },
+  {
+    id: 'iac4',
+    participantId: 'u1',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    activityType: 'postTest',
+    refId: 't2',
+    completedAt: '2026-03-21T09:20:00Z',
+  },
+]
+
+// ── Materi Access Tokens ──
+// Admin issued a token so u6 can skip to m2 in ic1/cat1 without finishing m1 first
+export const materiAccessTokens: MateriAccessToken[] = [
+  {
+    id: 'mat1',
+    token: 'TK-B3D9',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    participantId: 'u6',
+    activityType: 'materi',
+    refId: 'm2',
+    issuedBy: 'u5',
+    issuedAt: '2026-03-21T08:00:00Z',
+    note: 'Participant missed session 1 due to absence.',
   },
 ]
 
