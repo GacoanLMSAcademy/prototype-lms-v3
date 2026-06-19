@@ -31,6 +31,7 @@ const navItems = computed<MenuEntry[]>(() => {
       { label: 'Materi Types', to: '/admin/materi-type', icon: '📦' },
       { label: 'In-Class', to: '/admin/inclass', icon: '🏫' },
       { label: 'InClass Retake', to: '/admin/inclass-retake', icon: '🔁' },
+      { label: 'InClass Tokens', to: '/admin/inclass-tokens', icon: '🔑' },
       { label: 'Form Builder', to: '/admin/form-builder', icon: '📋' },
       { label: 'Section Types', to: '/admin/section-types', icon: '🗂️' },
       { label: 'Program Categories', to: '/admin/program-category', icon: '📂' },

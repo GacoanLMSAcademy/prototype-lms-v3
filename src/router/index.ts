@@ -245,6 +245,11 @@ const routes = [
         name: 'admin-inclass-retake',
         component: () => import('@/views/admin/InClassRetakeView.vue'),
       },
+      {
+        path: 'inclass-tokens',
+        name: 'admin-inclass-tokens',
+        component: () => import('@/views/admin/InClassTokenView.vue'),
+      },
     ],
   },
   // ── Instructor (read-only + scoring) ──
@@ -318,6 +323,11 @@ const routes = [
         path: 'progress',
         name: 'participant-progress',
         component: () => import('@/views/progress/ClassProgressView.vue'),
+      },
+      {
+        path: 'inclass/:classId/:inClassId',
+        name: 'participant-inclass',
+        component: () => import('@/views/participant/InClassView.vue'),
       },
       {
         path: 'transcript',

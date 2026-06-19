@@ -89,6 +89,43 @@ export interface InClass {
   createdAt: string
 }
 
+// ── InClass ordered progression tracking ──
+export type InClassActivityType = 'preTest' | 'materi' | 'postTest'
+
+export interface InClassActivity {
+  type: InClassActivityType
+  refId: string // testId for pre/post, materiId for materi
+  order: number // 0-based position in the sequence
+}
+
+// Records completion of a single in-class activity (pre-test, materi view, post-test)
+export interface InClassActivityCompletion {
+  id: string
+  participantId: string
+  classId: string
+  inClassId: string
+  categoryId: string
+  activityType: InClassActivityType
+  refId: string
+  completedAt: string
+}
+
+// Admin-issued token that unlocks a whole MateriCategory for ALL participants in the class.
+// Lock is per MateriType (category). One token is shared with the entire class.
+export interface MateriAccessToken {
+  id: string
+  token: string // e.g. "TK-A4F2" — admin shares this code with the class
+  classId: string
+  inClassId: string
+  categoryId: string // the MateriCategory.id (which has a materiTypeId) being unlocked
+  issuedBy: string // admin userId
+  issuedAt: string
+  note?: string
+  // Tracking who first redeemed it (token stays active for all after first redemption)
+  firstRedeemedAt?: string
+  firstRedeemedBy?: string // participantId
+}
+
 // ── Training Method ──
 export interface TrainingMethodComponent {
   id: string
