@@ -149,11 +149,23 @@ export interface SectionTypeEntity {
 }
 
 // ── Form Section System ──
+export type FormItemType = 'multiple_choice' | 'true_false' | 'scale' | 'free_text'
+
 export interface FormSectionItem {
   id: string
   label: string
+  itemType: FormItemType
   weight: number
   point: number
+  // multiple_choice options
+  options?: string[]
+  correctOption?: number // index into options
+  // scale config
+  scaleMin?: number
+  scaleMax?: number
+  scaleStep?: number
+  // true_false correct answer
+  correctTrueFalse?: boolean
 }
 
 export interface FormSection {
@@ -285,6 +297,10 @@ export interface TestAttempt {
   testId: string
   participantId: string
   classId: string
+  inClassId?: string // which InClass this belongs to (for pre/post tests)
+  categoryId?: string // which MateriCategory this belongs to
+  testType?: 'preTest' | 'postTest' | 'remedial' // context of the attempt
+  attemptNumber?: number // 1 = original, 2+ = retake
   answers: Answer[]
   score: number
   totalPoints: number
@@ -292,6 +308,21 @@ export interface TestAttempt {
   startedAt: string
   completedAt?: string
   status: 'inProgress' | 'completed' | 'expired'
+}
+
+// ── InClass Test Retake Permission ──
+export interface InClassRetakePermission {
+  id: string
+  classId: string
+  inClassId: string
+  categoryId: string
+  participantId: string
+  testId: string
+  testType: 'preTest' | 'postTest'
+  grantedBy: string // admin userId
+  grantedAt: string
+  usedAt?: string // set when the participant actually retakes
+  note?: string
 }
 
 // ── Scoring Contract ──

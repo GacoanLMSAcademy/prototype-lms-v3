@@ -21,6 +21,7 @@ import type {
   AuditLogEntry,
   UploadedFile,
   SectionTypeEntity,
+  InClassRetakePermission,
 } from '@/types'
 
 // ── Users (5 roles) ──
@@ -1149,6 +1150,10 @@ export const testAttempts: TestAttempt[] = [
     testId: 't1',
     participantId: 'u1',
     classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    testType: 'preTest',
+    attemptNumber: 1,
     answers: [
       { questionId: 'q1', value: 'q1a' },
       { questionId: 'q2', value: 'q2b' },
@@ -1161,6 +1166,76 @@ export const testAttempts: TestAttempt[] = [
     normalizedScore: 85,
     startedAt: '2026-03-20T09:00:00Z',
     completedAt: '2026-03-20T09:25:00Z',
+    status: 'completed',
+  },
+  {
+    id: 'ta1b',
+    testId: 't2',
+    participantId: 'u1',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    testType: 'postTest',
+    attemptNumber: 1,
+    answers: [
+      { questionId: 'q6', value: 'q6a' },
+      {
+        questionId: 'q7',
+        value: 'Feedback konstruktif: spesifik, berbasis perilaku, disampaikan dengan hormat',
+      },
+      { questionId: 'q8', value: 'nonverbal' },
+    ],
+    score: 40,
+    totalPoints: 40,
+    normalizedScore: 72,
+    startedAt: '2026-03-21T09:00:00Z',
+    completedAt: '2026-03-21T09:20:00Z',
+    status: 'completed',
+  },
+  // u6 — pre-test ic1/cat1 — low score (failed)
+  {
+    id: 'ta4',
+    testId: 't1',
+    participantId: 'u6',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    testType: 'preTest',
+    attemptNumber: 1,
+    answers: [
+      { questionId: 'q1', value: 'q1b' },
+      { questionId: 'q2', value: 'q2a' },
+      { questionId: 'q3', value: 'Kurang tahu' },
+      { questionId: 'q4', value: 'verbal' },
+      { questionId: 'q5', value: ['q5a', 'q5b', 'q5c'] },
+    ],
+    score: 20,
+    totalPoints: 65,
+    normalizedScore: 40,
+    startedAt: '2026-03-20T09:30:00Z',
+    completedAt: '2026-03-20T09:50:00Z',
+    status: 'completed',
+  },
+  // u7 — post-test ic1/cat2 — low score (failed)
+  {
+    id: 'ta5',
+    testId: 't2',
+    participantId: 'u7',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat2',
+    testType: 'postTest',
+    attemptNumber: 1,
+    answers: [
+      { questionId: 'q6', value: 'q6b' },
+      { questionId: 'q7', value: 'Belum tahu' },
+      { questionId: 'q8', value: 'verbal' },
+    ],
+    score: 10,
+    totalPoints: 40,
+    normalizedScore: 38,
+    startedAt: '2026-03-22T10:00:00Z',
+    completedAt: '2026-03-22T10:15:00Z',
     status: 'completed',
   },
   {
@@ -1198,6 +1273,23 @@ export const testAttempts: TestAttempt[] = [
     startedAt: '2026-02-05T09:00:00Z',
     completedAt: '2026-02-05T09:35:00Z',
     status: 'completed',
+  },
+]
+
+// ── InClass Test Retake Permissions ──
+export const inClassRetakePermissions: InClassRetakePermission[] = [
+  // Admin already granted u6 a retake on the pre-test for ic1/cat1
+  {
+    id: 'rp1',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    participantId: 'u6',
+    testId: 't1',
+    testType: 'preTest',
+    grantedBy: 'u5',
+    grantedAt: '2026-03-25T08:00:00Z',
+    note: 'Participant scored below 70. Permitted one retake.',
   },
 ]
 

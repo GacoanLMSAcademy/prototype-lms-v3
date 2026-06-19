@@ -201,6 +201,11 @@ const routes = [
         component: () => import('@/views/admin/ClassDetail.vue'),
       },
       {
+        path: 'classes/:id/progress',
+        name: 'admin-class-progress',
+        component: () => import('@/views/progress/ClassProgressView.vue'),
+      },
+      {
         path: 'knowledge-tests',
         name: 'admin-knowledge-tests',
         component: () => import('@/views/admin/KnowledgeTestList.vue'),
@@ -234,6 +239,11 @@ const routes = [
         path: 'uploads',
         name: 'admin-uploads',
         component: () => import('@/views/admin/UploadsView.vue'),
+      },
+      {
+        path: 'inclass-retake',
+        name: 'admin-inclass-retake',
+        component: () => import('@/views/admin/InClassRetakeView.vue'),
       },
     ],
   },
@@ -307,7 +317,7 @@ const routes = [
       {
         path: 'progress',
         name: 'participant-progress',
-        component: () => import('@/views/progress/ParticipantProgress.vue'),
+        component: () => import('@/views/progress/ClassProgressView.vue'),
       },
       {
         path: 'transcript',
