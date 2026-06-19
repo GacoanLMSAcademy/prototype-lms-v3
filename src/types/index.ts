@@ -47,14 +47,23 @@ export interface Test {
 }
 
 // ── Materi Library ──
-export type MateriType = 'pdf' | 'slide' | 'video' | 'h5p'
+export type MateriMediaType = 'pdf' | 'slide' | 'video' | 'h5p'
 
 export interface Materi {
   id: string
   title: string
-  type: MateriType
+  type: MateriMediaType
   embedUrl: string
   description?: string
+  createdBy: string
+  createdAt: string
+}
+
+// ── Materi Type ──
+export interface MateriType {
+  id: string
+  name: string
+  description: string
   createdBy: string
   createdAt: string
 }
@@ -65,6 +74,7 @@ export interface MateriCategory {
   name: string
   weight: number
   inClassId: string
+  materiTypeId?: string
   preTestId: string
   postTestId: string
   materiIds: string[]
@@ -140,6 +150,24 @@ export interface FormAssessment {
   clonedFrom?: string
 }
 
+// ── Program Category & Type ──
+export interface ProgramCategory {
+  id: string
+  name: string
+  description: string
+  createdBy: string
+  createdAt: string
+}
+
+export interface ProgramType {
+  id: string
+  name: string
+  description: string
+  programCategoryId: string
+  createdBy: string
+  createdAt: string
+}
+
 // ── Curriculum ──
 export interface CurriculumItem {
   id: string
@@ -154,7 +182,7 @@ export interface Curriculum {
   id: string
   title: string
   description: string
-  programCategory: string
+  programTypeId: string
   passingThreshold: number
   immutable: boolean
   items: CurriculumItem[]
@@ -193,6 +221,7 @@ export interface Submission {
 export interface Class {
   id: string
   name: string
+  programTypeId: string
   curriculumId: string
   knowledgeTestClassId?: string
   instructorId: string
@@ -324,6 +353,21 @@ export interface Remedial {
   score?: number
   assignedAt: string
   completedAt?: string
+}
+
+// ── Uploaded Files ──
+export type UploadFileType = 'slide' | 'pdf' | 'video' | 'link' | 'other'
+
+export interface UploadedFile {
+  id: string
+  curriculumItemId: string
+  participantId: string
+  classId: string
+  fileType: UploadFileType
+  fileName: string
+  fileUrl: string
+  description: string
+  submittedAt: string
 }
 
 // ── Audit Log ──

@@ -9,6 +9,8 @@ import {
   materis,
   trainingMethods,
   trainingMethodTypes,
+  programTypes,
+  programCategories,
   users as allUsers,
 } from '@/data/mockData'
 import type { ClassStatus } from '@/types'
@@ -19,6 +21,7 @@ const isEdit = !!(route.params.id && route.params.id !== 'new')
 const existing = isEdit ? classes.find(c => c.id === route.params.id) : null
 
 const name = ref(existing?.name ?? '')
+const programTypeId = ref(existing?.programTypeId ?? '')
 const curriculumId = ref(existing?.curriculumId ?? '')
 const knowledgeTestClassId = ref(existing?.knowledgeTestClassId ?? '')
 const instructorId = ref(existing?.instructorId ?? '')
@@ -79,6 +82,12 @@ const instructors = allUsers.filter(u => u.role === 'instructor')
 const participantPool = allUsers.filter(u => u.role === 'participant')
 const raterPool = allUsers.filter(u => u.role === 'rater')
 const selectedCurriculum = computed(() => curricula.find(c => c.id === curriculumId.value))
+const selectedCategoryName = computed(() => {
+  const pt = programTypes.find(p => p.id === programTypeId.value)
+  if (!pt) return ''
+  const cat = programCategories.find(c => c.id === pt.programCategoryId)
+  return cat ? cat.name : ''
+})
 const formAssessmentTypes = trainingMethodTypes
   .filter(t => !['inClass', 'knowledgeTest'].includes(t.name.toLowerCase().replace(/\s+/g, '')))
   .map(t => t.name.toLowerCase().replace(/\s+/g, ''))
@@ -147,6 +156,13 @@ function save() { alert('Class saved (mock)'); router.push('/admin/classes') }
     <div class="bg-white p-6 rounded shadow space-y-4 max-w-3xl">
       <div class="grid grid-cols-2 gap-4">
         <div><label class="block text-sm font-medium mb-1">Name</label><input v-model="name" class="w-full border rounded px-3 py-2"/></div>
+        <div><label class="block text-sm font-medium mb-1">Program Type</label>
+          <select v-model="programTypeId" class="w-full border rounded px-3 py-2">
+            <option value="">-- Select --</option>
+            <option v-for="pt in programTypes" :key="pt.id" :value="pt.id">{{ pt.name }}</option>
+          </select>
+          <p v-if="selectedCategoryName" class="text-xs text-gray-500 mt-1">Category: {{ selectedCategoryName }}</p>
+        </div>
         <div><label class="block text-sm font-medium mb-1">Status</label>
           <select v-model="status" class="w-full border rounded px-3 py-2">
             <option value="pending">Pending</option><option value="active">Active</option><option value="completed">Completed</option>

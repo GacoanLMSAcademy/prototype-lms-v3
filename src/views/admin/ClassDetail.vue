@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { classes, users, curricula, inClasses, materis } from '@/data/mockData'
+import { classes, users, curricula, inClasses, materis, programTypes, programCategories, uploadedFiles } from '@/data/mockData'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,6 +9,14 @@ const cls = classes.find(c => c.id === route.params.id)
 const participantDetails = computed(() => (cls?.participants.map(pid => users.find(u => u.id === pid)).filter(Boolean) as NonNullable<typeof users[number]>[]) ?? [])
 const raterDetails = computed(() => (cls?.raters.map(rid => users.find(u => u.id === rid)).filter(Boolean) as NonNullable<typeof users[number]>[]) ?? [])
 const curriculumDetail = computed(() => curricula.find(c => c.id === cls?.curriculumId))
+
+const programTypeDetail = computed(() => {
+  if (!cls) return null
+  const pt = programTypes.find(p => p.id === cls.programTypeId)
+  if (!pt) return null
+  const cat = programCategories.find(c => c.id === pt.programCategoryId)
+  return { name: pt.name, category: cat?.name ?? '-' }
+})
 
 function instructorName(id: string) {
   return users.find(u => u.id === id)?.name ?? '-'
@@ -25,10 +33,11 @@ function raterNames(ids: string[]) {
       <h2 class="text-2xl font-bold">{{ cls.name }}</h2>
       <button @click="router.push('/admin/classes/' + cls.id + '/edit')" class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Edit</button>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Program Type</p><p class="font-medium">{{ programTypeDetail?.name ?? '-' }}</p></div>
+      <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Category</p><p class="font-medium">{{ programTypeDetail?.category ?? '-' }}</p></div>
       <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Curriculum</p><p class="font-medium">{{ curriculumDetail?.title ?? 'Not assigned' }}</p></div>
       <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Instructor</p><p class="font-medium">{{ users.find(u => u.id === cls!.instructorId)?.name ?? '-' }}</p></div>
-      <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Dates</p><p class="font-medium text-sm">{{ cls!.startDate }} — {{ cls!.endDate }}</p></div>
       <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Status</p><p class="font-medium capitalize">{{ cls!.status }}</p></div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -77,6 +86,16 @@ function raterNames(ids: string[]) {
             <span>{{ raterNames(assignment.raterIds) }}</span>
           </div>
           <p v-if="!(cls.assessmentAssessorAssignments ?? []).some(a => a.trainingMethodId === item.id)" class="text-sm text-gray-400">No participant assessors assigned.</p>
+        </div>
+        <div v-else-if="item.trainingMethodType === 'uploadFile'" class="space-y-2">
+          <div v-for="pid in cls.participants" :key="pid" class="text-sm bg-gray-50 rounded p-2">
+            <p class="font-medium mb-1">{{ users.find(u => u.id === pid)?.name ?? pid }}</p>
+            <div v-for="uf in uploadedFiles.filter(f => f.classId === cls.id && f.participantId === pid && f.curriculumItemId === item.id)" :key="uf.id" class="ml-2 text-xs text-gray-600 flex items-center justify-between">
+              <span>{{ uf.fileName }} ({{ uf.fileType }})</span>
+              <a :href="uf.fileUrl" target="_blank" class="text-blue-600 hover:underline">Lihat</a>
+            </div>
+            <p v-if="!uploadedFiles.some(f => f.classId === cls.id && f.participantId === pid && f.curriculumItemId === item.id)" class="ml-2 text-xs text-gray-400">Belum upload</p>
+          </div>
         </div>
         <p v-else class="text-sm text-gray-400">No manual assignment.</p>
       </div>

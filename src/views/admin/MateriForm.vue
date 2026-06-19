@@ -2,14 +2,14 @@
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { materis } from '@/data/mockData'
-import type { MateriType } from '@/types'
+import type { MateriMediaType } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
 const isEdit = !!(route.params.id && route.params.id !== 'new')
 const existing = isEdit ? materis.find(m => m.id === route.params.id) : null
 const title = ref(existing?.title ?? '')
-const type = ref<MateriType>(existing?.type ?? 'pdf')
+const type = ref<MateriMediaType>(existing?.type ?? 'pdf')
 const embedUrl = ref(existing?.embedUrl ?? '')
 const description = ref(existing?.description ?? '')
 

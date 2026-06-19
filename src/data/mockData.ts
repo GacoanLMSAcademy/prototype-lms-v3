@@ -6,6 +6,9 @@ import type {
   FormAssessment,
   TrainingMethod,
   TrainingMethodType,
+  ProgramCategory,
+  ProgramType,
+  MateriType,
   Submission,
   Curriculum,
   Class,
@@ -16,6 +19,7 @@ import type {
   ParticipantProgress,
   Remedial,
   AuditLogEntry,
+  UploadedFile,
 } from '@/types'
 
 // ── Users (5 roles) ──
@@ -367,6 +371,31 @@ export const materis: Materi[] = [
   },
 ]
 
+// ── Materi Types ──
+export const materiTypes: MateriType[] = [
+  {
+    id: 'mt1',
+    name: 'Komunikasi Efektif',
+    description: 'Materi tentang teknik komunikasi dan presentasi',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'mt2',
+    name: 'Pelayanan Prima',
+    description: 'Materi tentang standar pelayanan pelanggan',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'mt3',
+    name: 'Akuntansi',
+    description: 'Materi tentang akuntansi dan pelaporan keuangan',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+]
+
 // ── In-Class ──
 export const inClasses: InClass[] = [
   {
@@ -379,6 +408,7 @@ export const inClasses: InClass[] = [
         name: 'Teori Komunikasi',
         weight: 40,
         inClassId: 'ic1',
+        materiTypeId: 'mt1',
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m1', 'm2'],
@@ -388,6 +418,7 @@ export const inClasses: InClass[] = [
         name: 'Praktik Komunikasi',
         weight: 60,
         inClassId: 'ic1',
+        materiTypeId: 'mt1',
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m3', 'm4'],
@@ -406,6 +437,7 @@ export const inClasses: InClass[] = [
         name: 'Negosiasi',
         weight: 50,
         inClassId: 'ic2',
+        materiTypeId: 'mt1',
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m1'],
@@ -415,6 +447,7 @@ export const inClasses: InClass[] = [
         name: 'Public Speaking',
         weight: 50,
         inClassId: 'ic2',
+        materiTypeId: 'mt1',
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m2', 'm3'],
@@ -691,6 +724,59 @@ export const trainingMethodTypes: TrainingMethodType[] = [
   },
 ]
 
+// ── Program Categories ──
+export const programCategories: ProgramCategory[] = [
+  {
+    id: 'pc1',
+    name: 'Mandatory',
+    description: 'Program terkait tugas operasional harian',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'pc2',
+    name: 'Refreshment',
+    description: 'Program pengembangan diri dan kepemimpinan',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'pc3',
+    name: 'Optional',
+    description: 'Program peningkatan keterampilan teknis dan profesional',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+]
+
+// ── Program Types ──
+export const programTypes: ProgramType[] = [
+  {
+    id: 'pt1',
+    name: 'TOS',
+    description: 'Program pengembangan frontliner dari screening hingga verifikasi',
+    programCategoryId: 'pc1',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'pt2',
+    name: 'SOS',
+    description: 'Program pengembangan supervisor dan calon supervisor',
+    programCategoryId: 'pc2',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'pt3',
+    name: 'SJPH',
+    description: 'Program akuntansi dan pelaporan keuangan',
+    programCategoryId: 'pc3',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+]
+
 // ── Training Methods (generic, replaces all method-specific arrays) ──
 export const trainingMethods: TrainingMethod[] = [
   {
@@ -773,18 +859,20 @@ export const trainingMethods: TrainingMethod[] = [
     typeId: 'tmt9',
     categories: [
       {
-        id: 'ttc1', name: 'Presentasi Slide', weight: 75,
-        formAssessmentId: '', typeId: 'tmt4',
-        components: [
-          { id: 'tc1', order: 1, weight: 100, passingScore: 70, contentId: 'pr1' },
-        ],
+        id: 'ttc1',
+        name: 'Presentasi Slide',
+        weight: 75,
+        formAssessmentId: '',
+        typeId: 'tmt4',
+        components: [{ id: 'tc1', order: 1, weight: 100, passingScore: 70, contentId: 'pr1' }],
       },
       {
-        id: 'ttc2', name: 'Studi Kasus Akuntansi', weight: 25,
-        formAssessmentId: '', typeId: 'tmt8',
-        components: [
-          { id: 'tc2', order: 1, weight: 100, passingScore: 70, contentId: 'ac1' },
-        ],
+        id: 'ttc2',
+        name: 'Studi Kasus Akuntansi',
+        weight: 25,
+        formAssessmentId: '',
+        typeId: 'tmt8',
+        components: [{ id: 'tc2', order: 1, weight: 100, passingScore: 70, contentId: 'ac1' }],
       },
     ],
     createdBy: 'u5',
@@ -795,10 +883,39 @@ export const trainingMethods: TrainingMethod[] = [
 // ── Submissions ──
 export const submissions: Submission[] = [
   {
-    id: 's1', trainingMethodId: 'ci3', participantId: 'u1', classId: 'cl1',
+    id: 's1',
+    trainingMethodId: 'ci3',
+    participantId: 'u1',
+    classId: 'cl1',
     fileUrl: 'https://docs.google.com/presentation/d/example1',
     description: 'Slide presentasi akhir program - Komunikasi Efektif',
     submittedAt: '2026-04-10T08:00:00Z',
+  },
+]
+
+// ── Uploaded Files (participant uploads) ──
+export const uploadedFiles: UploadedFile[] = [
+  {
+    id: 'uf1',
+    curriculumItemId: 'ci5',
+    participantId: 'u1',
+    classId: 'cl1',
+    fileType: 'slide',
+    fileName: 'Presentasi Komunikasi Efektif.pptx',
+    fileUrl: 'https://docs.google.com/presentation/d/example-upload',
+    description: 'Slide presentasi akhir program frontliner',
+    submittedAt: '2026-04-15T10:00:00Z',
+  },
+  {
+    id: 'uf2',
+    curriculumItemId: 'ci5',
+    participantId: 'u6',
+    classId: 'cl1',
+    fileType: 'pdf',
+    fileName: 'Laporan_Tugas.pdf',
+    fileUrl: 'https://drive.google.com/file/d/example-pdf',
+    description: 'Laporan tugas upload file',
+    submittedAt: '2026-04-16T14:30:00Z',
   },
 ]
 
@@ -822,7 +939,7 @@ export const curricula: Curriculum[] = [
     id: 'c1',
     title: 'Program Frontliner Excellence',
     description: 'Program pengembangan frontliner - mulai dari screening hingga verifikasi',
-    programCategory: 'Operasional',
+    programTypeId: 'pt1',
     passingThreshold: 75,
     immutable: true,
     items: [
@@ -831,7 +948,7 @@ export const curricula: Curriculum[] = [
         order: 1,
         trainingMethodType: 'inClass',
         contentId: 'ic1',
-        weight: 35,
+        weight: 30,
         passingScore: 70,
       },
       {
@@ -839,8 +956,16 @@ export const curricula: Curriculum[] = [
         order: 2,
         trainingMethodType: 'technicaltest',
         contentId: 'tt1',
-        weight: 65,
+        weight: 60,
         passingScore: 70,
+      },
+      {
+        id: 'ci5',
+        order: 3,
+        trainingMethodType: 'uploadFile',
+        contentId: 'Upload Portofolio Tugas Akhir',
+        weight: 10,
+        passingScore: 0,
       },
     ],
     createdBy: 'u5',
@@ -853,6 +978,7 @@ export const classes: Class[] = [
   {
     id: 'cl1',
     name: 'Frontliner Angkatan 1 - Reguler A',
+    programTypeId: 'pt1',
     curriculumId: 'c1',
     knowledgeTestClassId: 'kt1',
     instructorId: 'u2',
@@ -913,7 +1039,12 @@ export const classes: Class[] = [
       },
     ],
     assessmentAssessorAssignments: [
-      { trainingMethodId: 'ci2', participantId: 'u1', raterIds: ['u3', 'u11'], raterWeights: { u3: 65, u11: 35 } },
+      {
+        trainingMethodId: 'ci2',
+        participantId: 'u1',
+        raterIds: ['u3', 'u11'],
+        raterWeights: { u3: 65, u11: 35 },
+      },
       { trainingMethodId: 'ci2', participantId: 'u6', raterIds: ['u11'] },
       { trainingMethodId: 'ci2', participantId: 'u7', raterIds: ['u3'] },
     ],
@@ -923,6 +1054,7 @@ export const classes: Class[] = [
   {
     id: 'cl2',
     name: 'Frontliner Angkatan 1 - Reguler B',
+    programTypeId: 'pt1',
     curriculumId: 'c1',
     knowledgeTestClassId: 'kt1',
     instructorId: 'u13',
@@ -937,6 +1069,7 @@ export const classes: Class[] = [
   {
     id: 'cl3',
     name: 'Frontliner Angkatan 2 - Reguler A',
+    programTypeId: 'pt1',
     curriculumId: 'c1',
     knowledgeTestClassId: 'kt1',
     instructorId: 'u2',
@@ -1099,6 +1232,29 @@ export const participantProgress: ParticipantProgress[] = [
     methodType: 'inClass',
     status: 'failed',
     score: 45,
+  },
+  {
+    participantId: 'u1',
+    classId: 'cl1',
+    methodId: 'ci5',
+    methodType: 'uploadFile',
+    status: 'completed',
+    score: 100,
+  },
+  {
+    participantId: 'u6',
+    classId: 'cl1',
+    methodId: 'ci5',
+    methodType: 'uploadFile',
+    status: 'completed',
+    score: 100,
+  },
+  {
+    participantId: 'u7',
+    classId: 'cl1',
+    methodId: 'ci5',
+    methodType: 'uploadFile',
+    status: 'inProgress',
   },
 ]
 

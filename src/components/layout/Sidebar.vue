@@ -20,14 +20,18 @@ const navItems = computed<MenuEntry[]>(() => {
       { label: 'Dashboard', to: '/admin/dashboard', icon: '📊' },
       { label: 'Test Bank', to: '/admin/tests', icon: '📝' },
       { label: 'Materi Bank', to: '/admin/materi', icon: '📚' },
+      { label: 'Materi Types', to: '/admin/materi-type', icon: '📦' },
       { label: 'In-Class', to: '/admin/inclass', icon: '🏫' },
       { label: 'Form Builder', to: '/admin/form-builder', icon: '📋' },
+      { label: 'Program Categories', to: '/admin/program-category', icon: '📂' },
+      { label: 'Program Types', to: '/admin/program-type', icon: '📁' },
       { label: 'Training Method Types', to: '/admin/category-training-method', icon: '🏷️' },
       { label: 'Training Methods', to: '/admin/training-method', icon: '⚙️' },
       { label: 'Curriculum', to: '/admin/curriculum', icon: '🎯' },
       { label: 'Knowledge Test', to: '/admin/knowledge-tests', icon: '🔬' },
       { label: 'Classes', to: '/admin/classes', icon: '👥' },
       { label: 'Users', to: '/admin/users', icon: '👤' },
+      { label: 'Uploads', to: '/admin/uploads', icon: '📤' },
       { label: 'Audit Log', to: '/admin/audit', icon: '📜' },
     ]
   }
@@ -37,6 +41,7 @@ const navItems = computed<MenuEntry[]>(() => {
       { label: 'My Classes', to: '/instructor/classes', icon: '👥' },
       { label: 'KHS (Transcript)', to: '/instructor/khs', icon: '🎓' },
       { label: 'LGI (Progress)', to: '/instructor/lgi', icon: '📈' },
+      { label: 'Uploads', to: '/instructor/uploads', icon: '📤' },
     ]
   }
   if (role === 'participant') {
@@ -45,6 +50,7 @@ const navItems = computed<MenuEntry[]>(() => {
       { label: 'My Tests', to: '/participant/tests', icon: '📝' },
       { label: 'Progress', to: '/participant/progress', icon: '📈' },
       { label: 'Transcript', to: '/participant/transcript', icon: '🎓' },
+      { label: 'Upload File', to: '/participant/uploads', icon: '📤' },
     ]
   }
   if (role === 'rater') {
