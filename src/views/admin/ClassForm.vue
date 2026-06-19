@@ -204,6 +204,57 @@ function assignedRaterIds(trainingMethodId: string, participantId: string) {
   )
 }
 
+// ── Component tree helpers ──
+// Returns a flat list of "leaf" assignment targets for an assessor-type curriculum item.
+// Each leaf has: categoryId, categoryName, componentId (may equal categoryId if no components),
+// componentName, methodId (the TrainingMethod id to key assignments against)
+interface AssignLeaf {
+  categoryId: string
+  categoryName: string
+  categoryWeight: number
+  componentId: string // TrainingMethodComponent.id or same as categoryId when no components
+  componentName: string // sub-method title or category name
+  componentWeight: number
+  methodId: string // the TrainingMethod.id to use as trainingMethodId for assignments
+  hasComponents: boolean
+}
+
+function getAssignLeaves(curriculumItemId: string, contentId: string): AssignLeaf[] {
+  const method = trainingMethods.find((m) => m.id === contentId)
+  if (!method) return []
+  const leaves: AssignLeaf[] = []
+  for (const cat of method.categories) {
+    if (cat.components && cat.components.length > 0) {
+      for (const comp of cat.components) {
+        const subMethod = trainingMethods.find((m) => m.id === comp.contentId)
+        leaves.push({
+          categoryId: cat.id,
+          categoryName: cat.name,
+          categoryWeight: cat.weight,
+          componentId: comp.id,
+          componentName: subMethod?.title ?? comp.contentId,
+          componentWeight: comp.weight,
+          methodId: comp.contentId, // assign against the sub-method id
+          hasComponents: true,
+        })
+      }
+    } else {
+      // No components — the category itself is the leaf
+      leaves.push({
+        categoryId: cat.id,
+        categoryName: cat.name,
+        categoryWeight: cat.weight,
+        componentId: cat.id,
+        componentName: cat.name,
+        componentWeight: cat.weight,
+        methodId: curriculumItemId, // fall back to curriculum item id
+        hasComponents: false,
+      })
+    }
+  }
+  return leaves
+}
+
 // needs assessor assignment
 const assessorTypes = [
   'multirater',
@@ -508,12 +559,12 @@ function save() {
                   </p>
                 </div>
 
-                <!-- ── Assessment types: assign rater per participant ── -->
+                <!-- ── Assessment types: assign rater per participant, drilled to component ── -->
                 <div
                   v-else-if="
                     assessorTypes.includes(activeJourneyItem.trainingMethodType.toLowerCase())
                   "
-                  class="space-y-3"
+                  class="space-y-4"
                 >
                   <div
                     v-if="participants.length === 0"
@@ -521,83 +572,152 @@ function save() {
                   >
                     ⚠ Add participants first, then come back to assign assessors.
                   </div>
-                  <div
-                    v-for="pid in participants"
-                    :key="pid"
-                    class="bg-gray-50 rounded-lg p-3 border border-gray-100"
-                  >
-                    <p class="text-sm font-semibold text-gray-700 mb-2">
-                      {{ allUsers.find((u) => u.id === pid)?.name ?? pid }}
-                    </p>
-                    <!-- Search input -->
-                    <div class="relative mb-2">
-                      <input
-                        :value="assessorSearchQueries[searchKey(activeJourneyItem.id, pid)] ?? ''"
-                        @input="
-                          assessorSearchQueries[searchKey(activeJourneyItem.id, pid)] = (
-                            $event.target as HTMLInputElement
-                          ).value
-                        "
-                        placeholder="Search assessor by name or NIP…"
-                        class="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <!-- Dropdown results -->
+
+                  <template v-else>
+                    <!-- Group leaves by category -->
+                    <div
+                      v-for="cat in [
+                        ...new Map(
+                          getAssignLeaves(activeJourneyItem.id, activeJourneyItem.contentId).map(
+                            (l) => [l.categoryId, l],
+                          ),
+                        ).values(),
+                      ]"
+                      :key="cat.categoryId"
+                      class="border border-gray-200 rounded-xl overflow-hidden"
+                    >
+                      <!-- Category header -->
                       <div
-                        v-if="
-                          (assessorSearchQueries[searchKey(activeJourneyItem.id, pid)] ?? '').trim()
-                        "
-                        class="absolute z-10 top-full left-0 right-0 bg-white border rounded-lg mt-1 shadow-lg max-h-40 overflow-y-auto"
+                        class="bg-gray-50 border-b border-gray-200 px-4 py-2 flex items-center gap-2"
                       >
-                        <button
-                          v-for="r in getFilteredRaters(
-                            assessorSearchQueries[searchKey(activeJourneyItem.id, pid)] ?? '',
-                          )"
-                          :key="r.id"
-                          @click="
-                            () => {
-                              addAssessor(activeJourneyItem.id, pid, r.id)
-                              assessorSearchQueries[searchKey(activeJourneyItem.id, pid)] = ''
-                            }
-                          "
-                          class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center justify-between"
+                        <span class="text-sm font-semibold text-gray-700">{{
+                          cat.categoryName
+                        }}</span>
+                        <span class="text-xs text-gray-400">{{ cat.categoryWeight }}%</span>
+                      </div>
+
+                      <!-- Components inside this category -->
+                      <div class="divide-y divide-gray-100">
+                        <div
+                          v-for="leaf in getAssignLeaves(
+                            activeJourneyItem.id,
+                            activeJourneyItem.contentId,
+                          ).filter((l) => l.categoryId === cat.categoryId)"
+                          :key="leaf.componentId"
+                          class="px-4 py-3"
                         >
-                          <span>{{ r.name }}</span>
-                          <span v-if="r.nip" class="text-xs text-gray-400">{{ r.nip }}</span>
-                        </button>
-                        <p
-                          v-if="
-                            getFilteredRaters(
-                              assessorSearchQueries[searchKey(activeJourneyItem.id, pid)] ?? '',
-                            ).length === 0
-                          "
-                          class="px-3 py-2 text-sm text-gray-400 italic"
-                        >
-                          No matching assessors
-                        </p>
+                          <!-- Component label (only show if category has components) -->
+                          <div v-if="leaf.hasComponents" class="flex items-center gap-2 mb-3">
+                            <span
+                              class="text-xs bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded-full font-medium"
+                            >
+                              🔧 {{ leaf.componentName }}
+                            </span>
+                            <span class="text-xs text-gray-400">{{ leaf.componentWeight }}%</span>
+                          </div>
+
+                          <!-- Per-participant row -->
+                          <div class="space-y-2">
+                            <div
+                              v-for="pid in participants"
+                              :key="pid"
+                              class="bg-gray-50 rounded-lg p-3 border border-gray-100"
+                            >
+                              <p class="text-xs font-semibold text-gray-600 mb-2">
+                                {{ allUsers.find((u) => u.id === pid)?.name ?? pid }}
+                              </p>
+
+                              <!-- Search -->
+                              <div class="relative mb-2">
+                                <input
+                                  :value="
+                                    assessorSearchQueries[searchKey(leaf.methodId, pid)] ?? ''
+                                  "
+                                  @input="
+                                    assessorSearchQueries[searchKey(leaf.methodId, pid)] = (
+                                      $event.target as HTMLInputElement
+                                    ).value
+                                  "
+                                  placeholder="Search assessor by name or NIP…"
+                                  class="w-full border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                                <div
+                                  v-if="
+                                    (
+                                      assessorSearchQueries[searchKey(leaf.methodId, pid)] ?? ''
+                                    ).trim()
+                                  "
+                                  class="absolute z-10 top-full left-0 right-0 bg-white border rounded-lg mt-1 shadow-lg max-h-40 overflow-y-auto"
+                                >
+                                  <button
+                                    v-for="r in getFilteredRaters(
+                                      assessorSearchQueries[searchKey(leaf.methodId, pid)] ?? '',
+                                    )"
+                                    :key="r.id"
+                                    @click="
+                                      () => {
+                                        addAssessor(leaf.methodId, pid, r.id)
+                                        assessorSearchQueries[searchKey(leaf.methodId, pid)] = ''
+                                      }
+                                    "
+                                    class="w-full text-left px-3 py-2 text-sm hover:bg-blue-50 flex items-center justify-between"
+                                  >
+                                    <span>{{ r.name }}</span>
+                                    <span v-if="r.nip" class="text-xs text-gray-400">{{
+                                      r.nip
+                                    }}</span>
+                                  </button>
+                                  <p
+                                    v-if="
+                                      getFilteredRaters(
+                                        assessorSearchQueries[searchKey(leaf.methodId, pid)] ?? '',
+                                      ).length === 0
+                                    "
+                                    class="px-3 py-2 text-sm text-gray-400 italic"
+                                  >
+                                    No matching assessors
+                                  </p>
+                                </div>
+                              </div>
+
+                              <!-- Assigned raters -->
+                              <div class="flex flex-wrap gap-1.5">
+                                <span
+                                  v-for="raterId in assignedRaterIds(leaf.methodId, pid)"
+                                  :key="raterId"
+                                  class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full"
+                                >
+                                  {{ allUsers.find((u) => u.id === raterId)?.name ?? raterId }}
+                                  <button
+                                    @click="removeAssessor(leaf.methodId, pid, raterId)"
+                                    class="text-blue-500 hover:text-blue-800 ml-0.5 leading-none"
+                                  >
+                                    ✕
+                                  </button>
+                                </span>
+                                <span
+                                  v-if="assignedRaterIds(leaf.methodId, pid).length === 0"
+                                  class="text-xs text-gray-400 italic"
+                                  >No assessors assigned yet.</span
+                                >
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <!-- Assigned raters -->
-                    <div class="flex flex-wrap gap-1.5">
-                      <span
-                        v-for="raterId in assignedRaterIds(activeJourneyItem.id, pid)"
-                        :key="raterId"
-                        class="inline-flex items-center gap-1 bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full"
-                      >
-                        {{ allUsers.find((u) => u.id === raterId)?.name ?? raterId }}
-                        <button
-                          @click="removeAssessor(activeJourneyItem.id, pid, raterId)"
-                          class="text-blue-500 hover:text-blue-800 ml-0.5 leading-none"
-                        >
-                          ✕
-                        </button>
-                      </span>
-                      <span
-                        v-if="assignedRaterIds(activeJourneyItem.id, pid).length === 0"
-                        class="text-xs text-gray-400 italic"
-                        >No assessors assigned yet.</span
-                      >
-                    </div>
-                  </div>
+
+                    <!-- Fallback if method not found -->
+                    <p
+                      v-if="
+                        getAssignLeaves(activeJourneyItem.id, activeJourneyItem.contentId)
+                          .length === 0
+                      "
+                      class="text-sm text-gray-400 italic text-center py-4"
+                    >
+                      No training method categories found for this step.
+                    </p>
+                  </template>
                 </div>
 
                 <!-- ── Upload file / other ── -->
