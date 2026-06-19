@@ -7,6 +7,8 @@ import {
   inClasses,
   trainingMethods,
   trainingMethodTypes,
+  programTypes,
+  programCategories,
 } from '@/data/mockData'
 import type { CurriculumItem } from '@/types'
 
@@ -17,11 +19,17 @@ const existing = isEdit ? curricula.find((c) => c.id === route.params.id) : null
 
 const title = ref(existing?.title ?? '')
 const description = ref(existing?.description ?? '')
-const programCategory = ref(existing?.programCategory ?? '')
+const programTypeId = ref(existing?.programTypeId ?? '')
 const passingThreshold = ref(existing?.passingThreshold ?? 75)
 const items = ref<CurriculumItem[]>(existing?.items ?? [])
 const totalWeight = computed(() => items.value.reduce((s, i) => s + i.weight, 0))
 const valid = computed(() => totalWeight.value === 100 && items.value.length > 0)
+const selectedCategoryName = computed(() => {
+  const pt = programTypes.find(p => p.id === programTypeId.value)
+  if (!pt) return ''
+  const cat = programCategories.find(c => c.id === pt.programCategoryId)
+  return cat ? cat.name : ''
+})
 
 const methodTypes: { value: string; label: string; contentLabel: string }[] = [
   { value: 'knowledgeTest', label: 'Knowledge Test', contentLabel: 'Test' },
@@ -94,12 +102,12 @@ function save() {
           ><input v-model="title" class="w-full border rounded px-3 py-2" />
         </div>
         <div>
-          <label class="block text-sm font-medium mb-1">Program Category</label
-          ><input
-            v-model="programCategory"
-            class="w-full border rounded px-3 py-2"
-            placeholder="e.g. Operasional"
-          />
+          <label class="block text-sm font-medium mb-1">Program Type</label
+          ><select v-model="programTypeId" class="w-full border rounded px-3 py-2">
+            <option value="">-- Select --</option>
+            <option v-for="pt in programTypes" :key="pt.id" :value="pt.id">{{ pt.name }}</option>
+          </select>
+          <p v-if="selectedCategoryName" class="text-xs text-gray-500 mt-1">Category: {{ selectedCategoryName }}</p>
         </div>
       </div>
       <div>

@@ -22,6 +22,8 @@ const navItems = computed<MenuEntry[]>(() => {
       { label: 'Materi Bank', to: '/admin/materi', icon: '📚' },
       { label: 'In-Class', to: '/admin/inclass', icon: '🏫' },
       { label: 'Form Builder', to: '/admin/form-builder', icon: '📋' },
+      { label: 'Program Categories', to: '/admin/program-category', icon: '📂' },
+      { label: 'Program Types', to: '/admin/program-type', icon: '📁' },
       { label: 'Training Method Types', to: '/admin/category-training-method', icon: '🏷️' },
       { label: 'Training Methods', to: '/admin/training-method', icon: '⚙️' },
       { label: 'Curriculum', to: '/admin/curriculum', icon: '🎯' },

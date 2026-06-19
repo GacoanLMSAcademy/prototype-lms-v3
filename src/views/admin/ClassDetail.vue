@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { classes, users, curricula, inClasses, materis } from '@/data/mockData'
+import { classes, users, curricula, inClasses, materis, programTypes, programCategories } from '@/data/mockData'
 
 const route = useRoute()
 const router = useRouter()
@@ -9,6 +9,14 @@ const cls = classes.find(c => c.id === route.params.id)
 const participantDetails = computed(() => (cls?.participants.map(pid => users.find(u => u.id === pid)).filter(Boolean) as NonNullable<typeof users[number]>[]) ?? [])
 const raterDetails = computed(() => (cls?.raters.map(rid => users.find(u => u.id === rid)).filter(Boolean) as NonNullable<typeof users[number]>[]) ?? [])
 const curriculumDetail = computed(() => curricula.find(c => c.id === cls?.curriculumId))
+
+const programTypeDetail = computed(() => {
+  if (!cls) return null
+  const pt = programTypes.find(p => p.id === cls.programTypeId)
+  if (!pt) return null
+  const cat = programCategories.find(c => c.id === pt.programCategoryId)
+  return { name: pt.name, category: cat?.name ?? '-' }
+})
 
 function instructorName(id: string) {
   return users.find(u => u.id === id)?.name ?? '-'
@@ -25,10 +33,11 @@ function raterNames(ids: string[]) {
       <h2 class="text-2xl font-bold">{{ cls.name }}</h2>
       <button @click="router.push('/admin/classes/' + cls.id + '/edit')" class="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Edit</button>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Program Type</p><p class="font-medium">{{ programTypeDetail?.name ?? '-' }}</p></div>
+      <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Category</p><p class="font-medium">{{ programTypeDetail?.category ?? '-' }}</p></div>
       <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Curriculum</p><p class="font-medium">{{ curriculumDetail?.title ?? 'Not assigned' }}</p></div>
       <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Instructor</p><p class="font-medium">{{ users.find(u => u.id === cls!.instructorId)?.name ?? '-' }}</p></div>
-      <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Dates</p><p class="font-medium text-sm">{{ cls!.startDate }} — {{ cls!.endDate }}</p></div>
       <div class="bg-white p-4 rounded shadow"><p class="text-gray-500 text-sm">Status</p><p class="font-medium capitalize">{{ cls!.status }}</p></div>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
