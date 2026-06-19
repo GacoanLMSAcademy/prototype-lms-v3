@@ -497,9 +497,9 @@ function save() {
                 </div>
 
                 <!-- ── inClass: assign instructor per materi ── -->
-                <div v-if="activeJourneyItem.trainingMethodType === 'inClass'" class="space-y-3">
+                <div v-if="activeJourneyItem?.trainingMethodType === 'inClass'" class="space-y-3">
                   <div
-                    v-for="cat in inClasses.find((ic) => ic.id === activeJourneyItem.contentId)
+                    v-for="cat in inClasses.find((ic) => ic.id === activeJourneyItem?.contentId)
                       ?.categories ?? []"
                     :key="cat.id"
                     class="bg-gray-50 rounded-lg p-3 border border-gray-100"
@@ -549,8 +549,8 @@ function save() {
                   <p
                     v-if="
                       (
-                        inClasses.find((ic) => ic.id === activeJourneyItem.contentId)?.categories ??
-                        []
+                        inClasses.find((ic) => ic.id === activeJourneyItem?.contentId)
+                          ?.categories ?? []
                       ).length === 0
                     "
                     class="text-sm text-gray-400 italic"

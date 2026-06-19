@@ -180,7 +180,8 @@ function materiTitle(id: string) {
 }
 function materiIcon(id: string) {
   const t = materis.find((m) => m.id === id)?.type
-  return { pdf: '📄', slide: '📊', video: '🎬', h5p: '🎮' }[t ?? ''] ?? '📚'
+  const map: Record<string, string> = { pdf: '📄', slide: '📊', video: '🎬', h5p: '🎮' }
+  return t && map[t] ? map[t] : '📚'
 }
 function actLabel(a: InClassActivity) {
   if (a.type === 'preTest') return `Pre-Test: ${testTitle(a.refId)}`
