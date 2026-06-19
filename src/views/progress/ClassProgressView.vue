@@ -173,7 +173,8 @@ const ladder = computed((): LadderStep[] => {
 
   for (let i = 0; i < items.length; i++) {
     const item = items[i]
-    const prevStep = i > 0 ? steps[i - 1] : null
+    if (!item) continue
+    const prevStep = i > 0 ? (steps[i - 1] ?? null) : null
     const locked = prevStep !== null && prevStep.status !== 'passed' && item.passingScore > 0
 
     let stepStatus: StepStatus = 'pending'
