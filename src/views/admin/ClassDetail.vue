@@ -9,6 +9,7 @@ const cls = classes.find(c => c.id === route.params.id)
 const participantDetails = computed(() => (cls?.participants.map(pid => users.find(u => u.id === pid)).filter(Boolean) as NonNullable<typeof users[number]>[]) ?? [])
 const raterDetails = computed(() => (cls?.raters.map(rid => users.find(u => u.id === rid)).filter(Boolean) as NonNullable<typeof users[number]>[]) ?? [])
 const curriculumDetail = computed(() => curricula.find(c => c.id === cls?.curriculumId))
+const uploadFileItems = computed(() => curriculumDetail.value?.items.filter(i => i.trainingMethodType === 'uploadFile') ?? [])
 
 const programTypeDetail = computed(() => {
   if (!cls) return null
@@ -27,19 +28,10 @@ function raterNames(ids: string[]) {
 }
 
 function participantUploads(participantId: string, curriculumItemId: string) {
-  if (!cls) {
-    // #region agent log
-    fetch('http://127.0.0.1:7847/ingest/bd8d09a2-7fc8-4232-b70d-d83f4e1a68f4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'cb7f5d'},body:JSON.stringify({sessionId:'cb7f5d',runId:'pre-fix',hypothesisId:'C',location:'ClassDetail.vue:participantUploads',message:'cls undefined in participantUploads',data:{participantId,curriculumItemId},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-    return []
-  }
-  const files = uploadedFiles.filter(
+  if (!cls) return []
+  return uploadedFiles.filter(
     f => f.classId === cls.id && f.participantId === participantId && f.curriculumItemId === curriculumItemId
   )
-  // #region agent log
-  fetch('http://127.0.0.1:7847/ingest/bd8d09a2-7fc8-4232-b70d-d83f4e1a68f4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'cb7f5d'},body:JSON.stringify({sessionId:'cb7f5d',runId:'pre-fix',hypothesisId:'A',location:'ClassDetail.vue:participantUploads',message:'participant uploads resolved',data:{classId:cls.id,participantId,curriculumItemId,fileCount:files.length},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
-  return files
 }
 </script>
 
@@ -76,7 +68,7 @@ function participantUploads(participantId: string, curriculumItemId: string) {
     </div>
     <div class="bg-white rounded shadow p-4 mt-6">
       <h3 class="font-semibold mb-3">Training Journey Assignments</h3>
-      <div v-for="item in curriculumDetail?.items ?? []" :key="item.id" class="border-t py-3">
+      <div v-for="item in (curriculumDetail?.items ?? []).filter(i => i.trainingMethodType !== 'uploadFile')" :key="item.id" class="border-t py-3">
         <div class="flex items-center justify-between mb-2">
           <p class="font-medium capitalize text-sm">{{ item.trainingMethodType }}</p>
           <span class="text-xs text-gray-500">{{ item.id }}</span>
@@ -103,9 +95,14 @@ function participantUploads(participantId: string, curriculumItemId: string) {
           </div>
           <p v-if="!(cls.assessmentAssessorAssignments ?? []).some(a => a.trainingMethodId === item.id)" class="text-sm text-gray-400">No participant assessors assigned.</p>
         </div>
-        <div v-else-if="item.trainingMethodType === 'uploadFile'" class="space-y-2">
-          <div v-for="pid in cls.participants" :key="pid" class="text-sm bg-gray-50 rounded p-2">
-            <p class="font-medium mb-1">{{ users.find(u => u.id === pid)?.name ?? pid }}</p>
+        <p v-else class="text-sm text-gray-400">No manual assignment.</p>
+      </div>
+      <div v-if="uploadFileItems.length > 0" class="border-t py-3 mt-2">
+        <p class="font-medium capitalize text-sm mb-3">uploadFile</p>
+        <div v-for="pid in cls.participants" :key="pid" class="text-sm bg-gray-50 rounded p-2 mb-2">
+          <p class="font-medium mb-2">{{ users.find(u => u.id === pid)?.name ?? pid }}</p>
+          <div v-for="item in uploadFileItems" :key="item.id" class="ml-2 mb-2">
+            <p class="text-sm font-medium text-gray-700 mb-1">{{ item.contentId || 'Upload File' }}</p>
             <div v-for="uf in participantUploads(pid, item.id)" :key="uf.id" class="ml-2 text-xs text-gray-600 flex items-center justify-between">
               <span>{{ uf.fileName }} ({{ uf.fileType }})</span>
               <a :href="uf.fileUrl" target="_blank" class="text-blue-600 hover:underline">Lihat</a>
@@ -113,7 +110,6 @@ function participantUploads(participantId: string, curriculumItemId: string) {
             <p v-if="participantUploads(pid, item.id).length === 0" class="ml-2 text-xs text-gray-400">Belum upload</p>
           </div>
         </div>
-        <p v-else class="text-sm text-gray-400">No manual assignment.</p>
       </div>
     </div>
   </div>

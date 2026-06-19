@@ -139,11 +139,37 @@ export interface FormField {
   ratingMax?: number
 }
 
+// ── Section Type (user-managed, replaces the hardcoded SectionType union) ──
+export interface SectionTypeEntity {
+  id: string
+  name: string
+  description: string
+  createdBy: string
+  createdAt: string
+}
+
+// ── Form Section System ──
+export interface FormSectionItem {
+  id: string
+  label: string
+  weight: number
+  point: number
+}
+
+export interface FormSection {
+  id: string
+  title: string
+  sectionTypeId: string // references SectionTypeEntity.id
+  weight: number
+  items: FormSectionItem[]
+}
+
 export interface FormAssessment {
   id: string
   title: string
   description: string
   fields: FormField[]
+  sections?: FormSection[]
   typeId?: string
   createdBy: string
   createdAt: string

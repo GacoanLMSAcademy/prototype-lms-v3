@@ -20,6 +20,7 @@ import type {
   Remedial,
   AuditLogEntry,
   UploadedFile,
+  SectionTypeEntity,
 } from '@/types'
 
 // ── Users (5 roles) ──
@@ -455,6 +456,45 @@ export const inClasses: InClass[] = [
     ],
     createdBy: 'u5',
     createdAt: '2026-01-20T08:00:00Z',
+  },
+]
+
+// ── Section Types ──
+export const sectionTypes: SectionTypeEntity[] = [
+  {
+    id: 'st1',
+    name: 'Communication',
+    description: 'Questions with several answer options where one is correct',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'st2',
+    name: 'Time Management',
+    description: 'Open-ended written response questions',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'st3',
+    name: 'Data Analyst',
+    description: 'Binary choice questions — true or false',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'st4',
+    name: 'Presentation',
+    description: 'Sentences with missing words to be completed',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'st5',
+    name: 'Food Safety/CAPA',
+    description: 'Match items from two columns',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
   },
 ]
 
@@ -917,6 +957,17 @@ export const uploadedFiles: UploadedFile[] = [
     description: 'Laporan tugas upload file',
     submittedAt: '2026-04-16T14:30:00Z',
   },
+  {
+    id: 'uf3',
+    curriculumItemId: 'ci6',
+    participantId: 'u1',
+    classId: 'cl1',
+    fileType: 'pdf',
+    fileName: 'Sertifikat_Pelatihan.pdf',
+    fileUrl: 'https://drive.google.com/file/d/example-cert',
+    description: 'Sertifikat pelatihan eksternal',
+    submittedAt: '2026-04-17T09:00:00Z',
+  },
 ]
 
 // ── Knowledge Test Classes (screening) ──
@@ -964,7 +1015,15 @@ export const curricula: Curriculum[] = [
         order: 3,
         trainingMethodType: 'uploadFile',
         contentId: 'Upload Portofolio Tugas Akhir',
-        weight: 10,
+        weight: 5,
+        passingScore: 0,
+      },
+      {
+        id: 'ci6',
+        order: 4,
+        trainingMethodType: 'uploadFile',
+        contentId: 'Upload Sertifikat Pelatihan',
+        weight: 5,
         passingScore: 0,
       },
     ],
