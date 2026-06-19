@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { classes, users, curricula, inClasses, materis, programTypes, programCategories } from '@/data/mockData'
+import { classes, users, curricula, inClasses, materis, programTypes, programCategories, uploadedFiles } from '@/data/mockData'
 
 const route = useRoute()
 const router = useRouter()
@@ -86,6 +86,16 @@ function raterNames(ids: string[]) {
             <span>{{ raterNames(assignment.raterIds) }}</span>
           </div>
           <p v-if="!(cls.assessmentAssessorAssignments ?? []).some(a => a.trainingMethodId === item.id)" class="text-sm text-gray-400">No participant assessors assigned.</p>
+        </div>
+        <div v-else-if="item.trainingMethodType === 'uploadFile'" class="space-y-2">
+          <div v-for="pid in cls.participants" :key="pid" class="text-sm bg-gray-50 rounded p-2">
+            <p class="font-medium mb-1">{{ users.find(u => u.id === pid)?.name ?? pid }}</p>
+            <div v-for="uf in uploadedFiles.filter(f => f.classId === cls.id && f.participantId === pid && f.curriculumItemId === item.id)" :key="uf.id" class="ml-2 text-xs text-gray-600 flex items-center justify-between">
+              <span>{{ uf.fileName }} ({{ uf.fileType }})</span>
+              <a :href="uf.fileUrl" target="_blank" class="text-blue-600 hover:underline">Lihat</a>
+            </div>
+            <p v-if="!uploadedFiles.some(f => f.classId === cls.id && f.participantId === pid && f.curriculumItemId === item.id)" class="ml-2 text-xs text-gray-400">Belum upload</p>
+          </div>
         </div>
         <p v-else class="text-sm text-gray-400">No manual assignment.</p>
       </div>

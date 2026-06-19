@@ -34,12 +34,14 @@ const selectedCategoryName = computed(() => {
 const methodTypes: { value: string; label: string; contentLabel: string }[] = [
   { value: 'knowledgeTest', label: 'Knowledge Test', contentLabel: 'Test' },
   { value: 'inClass', label: 'In-Class', contentLabel: 'In-Class' },
+  { value: 'uploadFile', label: 'Upload File', contentLabel: 'File Task Name' },
   ...trainingMethodTypes.map(t => ({ value: t.name.toLowerCase().replace(/\s+/g, ''), label: t.name, contentLabel: t.name + ' Method' })),
 ]
 
 function getContentList(type: string) {
   if (type === 'knowledgeTest') return tests.map((t) => ({ id: t.id, title: t.title }))
   if (type === 'inClass') return inClasses.map((ic) => ({ id: ic.id, title: ic.title }))
+  if (type === 'uploadFile') return []
   return trainingMethods.filter(m => {
     const t = trainingMethodTypes.find(t => t.id === m.typeId)
     return t && t.name.toLowerCase().replace(/\s+/g, '') === type
@@ -172,7 +174,7 @@ function save() {
                 methodTypes.find((mt) => mt.value === item.trainingMethodType)?.contentLabel ??
                 'Content'
               }}</label>
-              <select v-model="item.contentId" class="w-full border rounded px-2 py-1 text-sm">
+              <select v-if="item.trainingMethodType !== 'uploadFile'" v-model="item.contentId" class="w-full border rounded px-2 py-1 text-sm">
                 <option value="">-- Select --</option>
                 <option
                   v-for="c in getContentList(item.trainingMethodType)"
@@ -182,6 +184,7 @@ function save() {
                   {{ c.title }}
                 </option>
               </select>
+              <input v-else v-model="item.contentId" class="w-full border rounded px-2 py-1 text-sm" placeholder="e.g. Upload Portofolio" />
             </div>
             <div>
               <label class="text-xs">Weight (%)</label>

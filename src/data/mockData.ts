@@ -8,6 +8,7 @@ import type {
   TrainingMethodType,
   ProgramCategory,
   ProgramType,
+  MateriType,
   Submission,
   Curriculum,
   Class,
@@ -18,6 +19,7 @@ import type {
   ParticipantProgress,
   Remedial,
   AuditLogEntry,
+  UploadedFile,
 } from '@/types'
 
 // ── Users (5 roles) ──
@@ -369,6 +371,31 @@ export const materis: Materi[] = [
   },
 ]
 
+// ── Materi Types ──
+export const materiTypes: MateriType[] = [
+  {
+    id: 'mt1',
+    name: 'Komunikasi Efektif',
+    description: 'Materi tentang teknik komunikasi dan presentasi',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'mt2',
+    name: 'Pelayanan Prima',
+    description: 'Materi tentang standar pelayanan pelanggan',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'mt3',
+    name: 'Akuntansi',
+    description: 'Materi tentang akuntansi dan pelaporan keuangan',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+]
+
 // ── In-Class ──
 export const inClasses: InClass[] = [
   {
@@ -381,6 +408,7 @@ export const inClasses: InClass[] = [
         name: 'Teori Komunikasi',
         weight: 40,
         inClassId: 'ic1',
+        materiTypeId: 'mt1',
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m1', 'm2'],
@@ -390,6 +418,7 @@ export const inClasses: InClass[] = [
         name: 'Praktik Komunikasi',
         weight: 60,
         inClassId: 'ic1',
+        materiTypeId: 'mt1',
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m3', 'm4'],
@@ -408,6 +437,7 @@ export const inClasses: InClass[] = [
         name: 'Negosiasi',
         weight: 50,
         inClassId: 'ic2',
+        materiTypeId: 'mt1',
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m1'],
@@ -417,6 +447,7 @@ export const inClasses: InClass[] = [
         name: 'Public Speaking',
         weight: 50,
         inClassId: 'ic2',
+        materiTypeId: 'mt1',
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m2', 'm3'],
@@ -862,6 +893,32 @@ export const submissions: Submission[] = [
   },
 ]
 
+// ── Uploaded Files (participant uploads) ──
+export const uploadedFiles: UploadedFile[] = [
+  {
+    id: 'uf1',
+    curriculumItemId: 'ci5',
+    participantId: 'u1',
+    classId: 'cl1',
+    fileType: 'slide',
+    fileName: 'Presentasi Komunikasi Efektif.pptx',
+    fileUrl: 'https://docs.google.com/presentation/d/example-upload',
+    description: 'Slide presentasi akhir program frontliner',
+    submittedAt: '2026-04-15T10:00:00Z',
+  },
+  {
+    id: 'uf2',
+    curriculumItemId: 'ci5',
+    participantId: 'u6',
+    classId: 'cl1',
+    fileType: 'pdf',
+    fileName: 'Laporan_Tugas.pdf',
+    fileUrl: 'https://drive.google.com/file/d/example-pdf',
+    description: 'Laporan tugas upload file',
+    submittedAt: '2026-04-16T14:30:00Z',
+  },
+]
+
 // ── Knowledge Test Classes (screening) ──
 export const knowledgeTestClasses: KnowledgeTestClass[] = [
   {
@@ -891,7 +948,7 @@ export const curricula: Curriculum[] = [
         order: 1,
         trainingMethodType: 'inClass',
         contentId: 'ic1',
-        weight: 35,
+        weight: 30,
         passingScore: 70,
       },
       {
@@ -899,8 +956,16 @@ export const curricula: Curriculum[] = [
         order: 2,
         trainingMethodType: 'technicaltest',
         contentId: 'tt1',
-        weight: 65,
+        weight: 60,
         passingScore: 70,
+      },
+      {
+        id: 'ci5',
+        order: 3,
+        trainingMethodType: 'uploadFile',
+        contentId: 'Upload Portofolio Tugas Akhir',
+        weight: 10,
+        passingScore: 0,
       },
     ],
     createdBy: 'u5',
@@ -1167,6 +1232,29 @@ export const participantProgress: ParticipantProgress[] = [
     methodType: 'inClass',
     status: 'failed',
     score: 45,
+  },
+  {
+    participantId: 'u1',
+    classId: 'cl1',
+    methodId: 'ci5',
+    methodType: 'uploadFile',
+    status: 'completed',
+    score: 100,
+  },
+  {
+    participantId: 'u6',
+    classId: 'cl1',
+    methodId: 'ci5',
+    methodType: 'uploadFile',
+    status: 'completed',
+    score: 100,
+  },
+  {
+    participantId: 'u7',
+    classId: 'cl1',
+    methodId: 'ci5',
+    methodType: 'uploadFile',
+    status: 'inProgress',
   },
 ]
 

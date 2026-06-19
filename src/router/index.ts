@@ -21,6 +21,9 @@ const routes = [
       { path: 'materi', name: 'admin-materi', component: () => import('@/views/admin/MateriList.vue') },
       { path: 'materi/new', name: 'admin-materi-new', component: () => import('@/views/admin/MateriForm.vue') },
       { path: 'materi/:id', name: 'admin-materi-edit', component: () => import('@/views/admin/MateriForm.vue') },
+      { path: 'materi-type', name: 'admin-materi-type', component: () => import('@/views/admin/MateriTypeList.vue') },
+      { path: 'materi-type/new', name: 'admin-materi-type-new', component: () => import('@/views/admin/MateriTypeForm.vue') },
+      { path: 'materi-type/:id', name: 'admin-materi-type-edit', component: () => import('@/views/admin/MateriTypeForm.vue') },
       { path: 'inclass', name: 'admin-inclass', component: () => import('@/views/admin/InClassList.vue') },
       { path: 'inclass/new', name: 'admin-inclass-new', component: () => import('@/views/admin/InClassForm.vue') },
       { path: 'inclass/:id', name: 'admin-inclass-edit', component: () => import('@/views/admin/InClassForm.vue') },
@@ -52,6 +55,7 @@ const routes = [
       { path: 'knowledge-tests/:id/results', name: 'admin-knowledge-test-results', component: () => import('@/views/admin/KnowledgeTestResult.vue') },
       { path: 'users', name: 'admin-users', component: () => import('@/views/admin/UserManagement.vue') },
       { path: 'audit', name: 'admin-audit', component: () => import('@/views/admin/AuditLogView.vue') },
+      { path: 'uploads', name: 'admin-uploads', component: () => import('@/views/admin/UploadsView.vue') },
     ],
   },
   // ── Instructor (read-only + scoring) ──
@@ -65,6 +69,7 @@ const routes = [
       { path: 'classes/:id/scores', name: 'instructor-class-scores', component: () => import('@/views/instructor/ScoreView.vue') },
       { path: 'khs', name: 'instructor-khs', component: () => import('@/views/instructor/KHSView.vue') },
       { path: 'lgi', name: 'instructor-lgi', component: () => import('@/views/instructor/LGIView.vue') },
+      { path: 'uploads', name: 'instructor-uploads', component: () => import('@/views/instructor/UploadsView.vue') },
     ],
   },
   // ── Participant ──
@@ -78,6 +83,7 @@ const routes = [
       { path: 'tests/:id/result', name: 'participant-test-result', component: () => import('@/views/testTaker/TestResultView.vue') },
       { path: 'progress', name: 'participant-progress', component: () => import('@/views/progress/ParticipantProgress.vue') },
       { path: 'transcript', name: 'participant-transcript', component: () => import('@/views/transcript/TranscriptView.vue') },
+      { path: 'uploads', name: 'participant-uploads', component: () => import('@/views/participant/UploadFileView.vue') },
     ],
   },
   // ── Rater ──

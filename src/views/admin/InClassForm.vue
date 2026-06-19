@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { inClasses, tests, materis } from '@/data/mockData'
+import { inClasses, tests, materis, materiTypes } from '@/data/mockData'
 import type { MateriCategory } from '@/types'
 
 const route = useRoute()
@@ -14,7 +14,7 @@ const description = ref(existing?.description ?? '')
 const categories = ref<MateriCategory[]>(existing?.categories ?? [])
 
 function addCategory() {
-  categories.value.push({ id: 'cat' + Date.now(), name: '', weight: 0, inClassId: '', preTestId: '', postTestId: '', materiIds: [] })
+  categories.value.push({ id: 'cat' + Date.now(), name: '', weight: 0, inClassId: '', materiTypeId: '', preTestId: '', postTestId: '', materiIds: [] })
 }
 function removeCategory(idx: number) { categories.value.splice(idx, 1) }
 function addMateriToCategory(catIdx: number, materiId: string) {
@@ -40,7 +40,7 @@ function save() { alert('In-Class saved (mock)'); router.push('/admin/inclass') 
           <div class="grid grid-cols-3 gap-3 mb-3">
             <div><label class="text-xs">Name</label><input v-model="cat.name" class="w-full border rounded px-2 py-1 text-sm"/></div>
             <div><label class="text-xs">Weight (%)</label><input v-model.number="cat.weight" type="number" class="w-full border rounded px-2 py-1 text-sm"/></div>
-            <div><label class="text-xs">In-Class ID</label><input v-model="cat.inClassId" class="w-full border rounded px-2 py-1 text-sm bg-gray-50"/></div>
+            <div><label class="text-xs">Materi Type</label><select v-model="cat.materiTypeId" class="w-full border rounded px-2 py-1 text-sm"><option value="">--</option><option v-for="mt in materiTypes" :key="mt.id" :value="mt.id">{{ mt.name }}</option></select></div>
           </div>
           <div class="grid grid-cols-2 gap-3 mb-3">
             <div><label class="text-xs">Pre-Test</label><select v-model="cat.preTestId" class="w-full border rounded px-2 py-1 text-sm"><option value="">--</option><option v-for="t in tests" :key="t.id" :value="t.id">{{ t.title }}</option></select></div>
