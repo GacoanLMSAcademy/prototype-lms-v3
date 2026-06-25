@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   classes,
   curricula,
   inClasses,
-  knowledgeTestClasses,
   materis,
+  testAttempts,
   trainingMethods,
   trainingMethodTypes,
   programTypes,
@@ -41,9 +41,22 @@ const categoryClass = ref<'assessment-test' | 'regular'>(
 const instructors = allUsers.filter((u) => u.role === 'instructor')
 const participantPool = allUsers.filter((u) => u.role === 'participant')
 const raterPool = allUsers.filter((u) => u.role === 'rater')
+const ASSESSMENT_PASSING_SCORE = 70
 
 // ── Derived ──
 const selectedCurriculum = computed(() => curricula.find((c) => c.id === curriculumId.value))
+const completedAssessmentTestClasses = computed(() =>
+  classes.filter(
+    (c) =>
+      c.status === 'completed' &&
+      !c.curriculumId &&
+      c.id !== existing?.id &&
+      (!programTypeId.value || c.programTypeId === programTypeId.value),
+  ),
+)
+const selectedAssessmentTestClass = computed(() =>
+  completedAssessmentTestClasses.value.find((c) => c.id === knowledgeTestClassId.value),
+)
 const selectedCategoryName = computed(() => {
   const pt = programTypes.find((p) => p.id === programTypeId.value)
   if (!pt) return ''
@@ -115,11 +128,59 @@ function getMethodTitle(type: string, contentId: string) {
 }
 
 // ── Participants ──
+function hasPassedSelectedAssessmentTest(participantId: string) {
+  if (!knowledgeTestClassId.value) return true
+  return testAttempts.some(
+    (a) =>
+      a.classId === knowledgeTestClassId.value &&
+      a.participantId === participantId &&
+      a.status === 'completed' &&
+      a.normalizedScore >= ASSESSMENT_PASSING_SCORE,
+  )
+}
+
+function bestAssessmentTestScore(participantId: string) {
+  if (!knowledgeTestClassId.value) return null
+  const scores = testAttempts
+    .filter(
+      (a) =>
+        a.classId === knowledgeTestClassId.value &&
+        a.participantId === participantId &&
+        a.status === 'completed',
+    )
+    .map((a) => a.normalizedScore)
+  return scores.length ? Math.max(...scores) : null
+}
+
 function toggleParticipant(id: string) {
+  if (!hasPassedSelectedAssessmentTest(id)) return
   const idx = participants.value.indexOf(id)
   if (idx >= 0) participants.value.splice(idx, 1)
   else participants.value.push(id)
 }
+
+watch(
+  [knowledgeTestClassId, categoryClass],
+  () => {
+    if (categoryClass.value !== 'regular') {
+      knowledgeTestClassId.value = ''
+      return
+    }
+    if (knowledgeTestClassId.value) {
+      participants.value = participants.value.filter((id) => hasPassedSelectedAssessmentTest(id))
+    }
+  },
+  { immediate: true },
+)
+
+watch(completedAssessmentTestClasses, (availableClasses) => {
+  if (
+    knowledgeTestClassId.value &&
+    !availableClasses.some((assessmentClass) => assessmentClass.id === knowledgeTestClassId.value)
+  ) {
+    knowledgeTestClassId.value = ''
+  }
+})
 
 // ── InClass instructor assignment ──
 function assignedInstructorId(
@@ -327,45 +388,50 @@ function save() {
       </div>
 
       <!-- Curriculum -->
-      <div>
-        <label class="block text-sm font-medium mb-1"
-          >Curriculum
-          <span class="text-gray-400 font-normal text-xs">(locked after save)</span></label
-        >
-        <select
-          v-model="curriculumId"
-          class="w-full border rounded-lg px-3 py-2"
-          :disabled="isEdit"
-        >
-          <option value="">-- Select --</option>
-          <option v-for="c in curricula" :key="c.id" :value="c.id">{{ c.title }}</option>
-        </select>
-        <p v-if="isEdit" class="text-xs text-gray-400 mt-1">
-          Curriculum is immutable once class is created.
-        </p>
-      </div>
 
-      <!-- Knowledge test + instructor -->
+      <!-- Assessment test + instructor -->
       <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1"
+            >Curriculum
+            <span class="text-gray-400 font-normal text-xs">(locked after save)</span></label
+          >
+          <select
+            v-model="curriculumId"
+            class="w-full border rounded-lg px-3 py-2"
+            :disabled="isEdit"
+          >
+            <option value="">-- Select --</option>
+            <option v-for="c in curricula" :key="c.id" :value="c.id">{{ c.title }}</option>
+          </select>
+          <p v-if="isEdit" class="text-xs text-gray-400 mt-1">
+            Curriculum is immutable once class is created.
+          </p>
+        </div>
         <div v-if="categoryClass === 'regular'">
           <label class="block text-sm font-medium mb-1"
-            >Knowledge Test <span class="text-gray-400 font-normal text-xs">(optional)</span></label
+            >Assessment Test Class
+            <span class="text-gray-400 font-normal text-xs">(optional)</span></label
           >
           <select v-model="knowledgeTestClassId" class="w-full border rounded-lg px-3 py-2">
             <option value="">-- None --</option>
-            <option v-for="kt in knowledgeTestClasses" :key="kt.id" :value="kt.id">
-              {{ kt.name }}
+            <option
+              v-for="assessmentClass in completedAssessmentTestClasses"
+              :key="assessmentClass.id"
+              :value="assessmentClass.id"
+            >
+              {{ assessmentClass.name }}
             </option>
           </select>
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Default Instructor</label>
-          <select v-model="instructorId" class="w-full border rounded-lg px-3 py-2">
-            <option value="">-- Select --</option>
-            <option v-for="inst in instructors" :key="inst.id" :value="inst.id">
-              {{ inst.name }}
-            </option>
-          </select>
+          <p v-if="selectedAssessmentTestClass" class="text-xs text-gray-500 mt-1">
+            Participants must pass this assessment test class before they can be selected.
+          </p>
+          <p
+            v-else-if="completedAssessmentTestClasses.length === 0"
+            class="text-xs text-gray-400 mt-1"
+          >
+            No completed assessment test classes available for this program type.
+          </p>
         </div>
       </div>
 
@@ -388,16 +454,39 @@ function save() {
           <label
             v-for="p in participantPool"
             :key="p.id"
-            class="flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50 cursor-pointer"
+            :class="[
+              'flex items-center gap-2 px-2 py-1 rounded hover:bg-gray-50',
+              knowledgeTestClassId && !hasPassedSelectedAssessmentTest(p.id)
+                ? 'opacity-50 cursor-not-allowed'
+                : 'cursor-pointer',
+            ]"
           >
             <input
               type="checkbox"
               :checked="participants.includes(p.id)"
+              :disabled="!!knowledgeTestClassId && !hasPassedSelectedAssessmentTest(p.id)"
               @change="toggleParticipant(p.id)"
               class="accent-blue-600"
             />
             <span class="text-sm">{{ p.name }}</span>
             <span class="text-xs text-gray-400">{{ p.nip }}</span>
+            <span
+              v-if="knowledgeTestClassId"
+              :class="[
+                'ml-auto text-[11px] px-2 py-0.5 rounded-full',
+                hasPassedSelectedAssessmentTest(p.id)
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-red-100 text-red-600',
+              ]"
+            >
+              {{
+                bestAssessmentTestScore(p.id) === null
+                  ? 'Not taken'
+                  : hasPassedSelectedAssessmentTest(p.id)
+                    ? `Passed ${bestAssessmentTestScore(p.id)}%`
+                    : `Failed ${bestAssessmentTestScore(p.id)}%`
+              }}
+            </span>
           </label>
         </div>
         <p class="text-xs text-gray-400 mt-1">{{ participants.length }} selected</p>

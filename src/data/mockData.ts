@@ -1038,6 +1038,20 @@ export const curricula: Curriculum[] = [
 // ── Classes ──
 export const classes: Class[] = [
   {
+    id: 'kt1',
+    name: 'Knowledge Test - Pelayanan Prima',
+    programTypeId: 'pt1',
+    curriculumId: '',
+    instructorId: 'u2',
+    startDate: '2026-02-05',
+    endDate: '2026-02-05',
+    status: 'completed',
+    participants: ['u1', 'u6', 'u7', 'u8', 'u9', 'u10', 'u14', 'u15'],
+    raters: [],
+    createdBy: 'u5',
+    createdAt: '2026-02-01T08:00:00Z',
+  },
+  {
     id: 'cl1',
     name: 'Frontliner Angkatan 1 - Reguler A',
     programTypeId: 'pt1',
