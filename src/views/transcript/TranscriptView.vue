@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { classes, curricula, testAttempts, assessments, trainingMethods } from '@/data/mockData'
+import { classes, curricula, knowledgeTestClasses, testAttempts, assessments, trainingMethods } from '@/data/mockData'
 
 const auth = useAuthStore()
 const myClasses = computed(() => classes.filter(c => c.participants.includes(auth.userId)))
 
-function getMethodTitle(contentId: string): string {
+function getMethodTitle(contentId: string, type?: string): string {
+  if (type === 'knowledgeTest') {
+    const kt = knowledgeTestClasses.find(k => k.id === contentId)
+    if (kt) return kt.name
+  }
   const m = trainingMethods.find(tm => tm.id === contentId)
   return m ? m.title : contentId
 }
@@ -64,7 +68,7 @@ const transcripts = computed(() => myClasses.value.map(cls => {
       score = Math.round(weightedSum)
     }
     const passStatus = score >= item.passingScore ? 'pass' : 'fail'
-    const title = getMethodTitle(item.contentId)
+    const title = getMethodTitle(item.contentId, item.trainingMethodType)
     return { methodTitle: title, methodType: item.trainingMethodType, weight: item.weight, score, weightedScore: Math.round((item.weight / 100) * score), passStatus }
   }) ?? []
   const total = entries.reduce((s, e) => s + e.weightedScore, 0)

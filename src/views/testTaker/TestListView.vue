@@ -5,6 +5,7 @@ import { useAuthStore } from '@/stores/auth'
 import {
   classes,
   curricula,
+  knowledgeTestClasses,
   tests,
   testAttempts,
   inClasses,
@@ -24,27 +25,48 @@ const curriculumTests = computed(() => {
     className: string
     classId: string
     timeLimit: number
+    isRetake: boolean
+    attemptCount: number
+    bestScore: number | null
   }[] = []
   myClasses.value.forEach((cls) => {
     const curriculum = curricula.find((c) => c.id === cls.curriculumId)
     curriculum?.items.forEach((item) => {
-      if (item.trainingMethodType === 'knowledgeTest' || item.trainingMethodType === 'accounting') {
-        const t = tests.find((t) => t.id === item.contentId)
+      if (item.trainingMethodType === 'knowledgeTest') {
+        const kt = knowledgeTestClasses.find((kt) => kt.id === item.contentId)
+        const t = kt ? tests.find((t) => t.id === kt.testId) : tests.find((t) => t.id === item.contentId)
         if (t) {
-          const taken = testAttempts.some(
+          const myAttempts = testAttempts.filter(
             (a) =>
               a.testId === t.id &&
               a.participantId === auth.userId &&
               a.classId === cls.id &&
+              !a.categoryId &&
               a.status === 'completed',
           )
-          if (!taken)
+          const attemptCount = myAttempts.length
+          const bestScore =
+            attemptCount > 0 ? Math.max(...myAttempts.map((a) => a.normalizedScore)) : null
+          const retakePermission = inClassRetakePermissions.find(
+            (p) =>
+              p.participantId === auth.userId &&
+              p.classId === cls.id &&
+              p.testId === t.id &&
+              !p.categoryId &&
+              p.testType === 'knowledgeTest' &&
+              !p.usedAt,
+          )
+
+          if (attemptCount === 0 || retakePermission)
             result.push({
               testId: t.id,
-              testTitle: t.title,
+              testTitle: kt?.name ?? t.title,
               className: cls.name,
               classId: cls.id,
               timeLimit: t.timeLimit,
+              isRetake: !!retakePermission,
+              attemptCount,
+              bestScore,
             })
         }
       }
@@ -165,8 +187,10 @@ function startTest(entry: InClassTestEntry) {
   router.push(`/participant/tests/${entry.testId}/take?${params.toString()}`)
 }
 
-function startCurriculumTest(testId: string, classId: string) {
-  router.push(`/participant/tests/${testId}/take?classId=${classId}`)
+function startCurriculumTest(entry: (typeof curriculumTests.value)[number]) {
+  const params = new URLSearchParams({ classId: entry.classId })
+  if (entry.isRetake) params.set('isRetake', '1')
+  router.push(`/participant/tests/${entry.testId}/take?${params.toString()}`)
 }
 
 function testName(testId: string) {
@@ -257,14 +281,34 @@ function formatDate(iso: string) {
           class="bg-white rounded-xl shadow p-4 flex items-center justify-between"
         >
           <div>
+            <div v-if="t.isRetake" class="mb-1">
+              <span
+                class="text-xs font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full"
+              >
+                Retake #{{ t.attemptCount + 1 }}
+              </span>
+            </div>
             <h4 class="font-semibold text-gray-800">{{ t.testTitle }}</h4>
             <p class="text-sm text-gray-500">{{ t.className }} | {{ t.timeLimit }} min</p>
+            <p v-if="t.bestScore !== null" class="text-xs text-gray-500 mt-1">
+              Best previous score:
+              <span
+                :class="
+                  t.bestScore >= 70 ? 'text-green-600 font-medium' : 'text-red-500 font-medium'
+                "
+              >
+                {{ t.bestScore }}%
+              </span>
+            </p>
           </div>
           <button
-            @click="startCurriculumTest(t.testId, t.classId)"
-            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium"
+            @click="startCurriculumTest(t)"
+            :class="[
+              'text-white px-4 py-2 rounded-lg text-sm font-medium',
+              t.isRetake ? 'bg-amber-500 hover:bg-amber-600' : 'bg-blue-600 hover:bg-blue-700',
+            ]"
           >
-            Start
+            {{ t.isRetake ? 'Retake' : 'Start' }}
           </button>
         </div>
       </div>

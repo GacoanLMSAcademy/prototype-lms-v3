@@ -1292,7 +1292,7 @@ export const testAttempts: TestAttempt[] = [
   },
 ]
 
-// ── InClass Test Retake Permissions ──
+// ── Test Retake Permissions ──
 export const inClassRetakePermissions: InClassRetakePermission[] = [
   // Admin already granted u6 a retake on the pre-test for ic1/cat1
   {
