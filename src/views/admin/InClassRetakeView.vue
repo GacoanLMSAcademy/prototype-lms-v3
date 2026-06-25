@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import {
   inClasses,
   classes,
+  curricula,
+  knowledgeTestClasses,
   users,
   tests,
   testAttempts,
@@ -16,6 +18,7 @@ const auth = useAuthStore()
 // ── Filters ──
 const selectedClassId = ref('')
 const selectedInClassId = ref('')
+const selectedScope = ref<'inClass' | 'classActivity'>('inClass')
 
 const classOptions = computed(() => classes)
 const inClassOptions = computed(() =>
@@ -30,6 +33,29 @@ const inClassOptions = computed(() =>
 
 const selectedClass = computed(() => classes.find((c) => c.id === selectedClassId.value))
 const selectedInClass = computed(() => inClasses.find((ic) => ic.id === selectedInClassId.value))
+const classActivityTests = computed(() => {
+  const cls = selectedClass.value
+  if (!cls) return []
+  const curriculum = curricula.find((c) => c.id === cls.curriculumId)
+  if (!curriculum) return []
+  return curriculum.items
+    .filter((item) => item.trainingMethodType === 'knowledgeTest')
+    .map((item) => {
+      const knowledgeTest = knowledgeTestClasses.find((kt) => kt.id === item.contentId)
+      const test = knowledgeTest
+        ? tests.find((t) => t.id === knowledgeTest.testId)
+        : tests.find((t) => t.id === item.contentId)
+      return test
+        ? {
+            testId: test.id,
+            title: knowledgeTest?.name ?? test.title,
+            timeLimit: test.timeLimit,
+            passingScore: knowledgeTest?.passingScore ?? item.passingScore,
+          }
+        : null
+    })
+    .filter((item): item is NonNullable<typeof item> => !!item)
+})
 
 // ── Participants of selected class ──
 const participants = computed(() => {
@@ -52,6 +78,8 @@ function formatDate(iso: string) {
 }
 
 // ── Get all attempts for a participant + inClass category + testType ──
+type RetakeTestType = 'preTest' | 'postTest' | 'knowledgeTest'
+
 function getAttempts(participantId: string, categoryId: string, testType: 'preTest' | 'postTest') {
   return testAttempts
     .filter(
@@ -64,20 +92,34 @@ function getAttempts(participantId: string, categoryId: string, testType: 'preTe
     .sort((a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime())
 }
 
+function getClassActivityAttempts(participantId: string, testId: string) {
+  return testAttempts
+    .filter(
+      (a) =>
+        a.participantId === participantId &&
+        a.testId === testId &&
+        a.classId === selectedClassId.value &&
+        !a.categoryId,
+    )
+    .sort((a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime())
+}
+
 // ── Check if a retake permission already exists (and unused) ──
 function hasActivePermission(
   participantId: string,
-  categoryId: string,
-  testType: 'preTest' | 'postTest',
+  categoryId: string | undefined,
+  testType: RetakeTestType,
   testId: string,
+  inClassId = selectedInClassId.value,
 ) {
   return inClassRetakePermissions.some(
     (p) =>
       p.participantId === participantId &&
-      p.categoryId === categoryId &&
+      (categoryId ? p.categoryId === categoryId : !p.categoryId) &&
       p.testType === testType &&
       p.testId === testId &&
       p.classId === selectedClassId.value &&
+      (inClassId ? p.inClassId === inClassId : !p.inClassId) &&
       !p.usedAt,
   )
 }
@@ -92,14 +134,15 @@ const pendingPermission = ref<Omit<
 
 function openGrantModal(
   participantId: string,
-  categoryId: string,
-  testType: 'preTest' | 'postTest',
+  categoryId: string | undefined,
+  testType: RetakeTestType,
   testId: string,
+  inClassId = selectedInClassId.value,
 ) {
   pendingPermission.value = {
     classId: selectedClassId.value,
-    inClassId: selectedInClassId.value,
-    categoryId,
+    inClassId: inClassId || undefined,
+    categoryId: categoryId || undefined,
     participantId,
     testId,
     testType,
@@ -124,17 +167,19 @@ function confirmGrant() {
 // ── Revoke (remove unused permission) ──
 function revokePermission(
   participantId: string,
-  categoryId: string,
-  testType: 'preTest' | 'postTest',
+  categoryId: string | undefined,
+  testType: RetakeTestType,
   testId: string,
+  inClassId = selectedInClassId.value,
 ) {
   const idx = inClassRetakePermissions.findIndex(
     (p) =>
       p.participantId === participantId &&
-      p.categoryId === categoryId &&
+      (categoryId ? p.categoryId === categoryId : !p.categoryId) &&
       p.testType === testType &&
       p.testId === testId &&
       p.classId === selectedClassId.value &&
+      (inClassId ? p.inClassId === inClassId : !p.inClassId) &&
       !p.usedAt,
   )
   if (idx !== -1) inClassRetakePermissions.splice(idx, 1)
@@ -148,12 +193,15 @@ const logAttempts = ref<typeof testAttempts>([])
 function openLog(
   participantId: string,
   participantName: string,
-  categoryId: string,
-  testType: 'preTest' | 'postTest',
+  categoryId: string | undefined,
+  testType: RetakeTestType,
   testId: string,
 ) {
-  logTitle.value = `${participantName} — ${testType === 'preTest' ? 'Pre-Test' : 'Post-Test'} log for "${testTitle(testId)}"`
-  logAttempts.value = getAttempts(participantId, categoryId, testType)
+  logTitle.value = `${participantName} — ${testType === 'preTest' ? 'Pre-Test' : testType === 'postTest' ? 'Post-Test' : 'Knowledge Test'} log for "${testTitle(testId)}"`
+  logAttempts.value =
+    testType === 'knowledgeTest'
+      ? getClassActivityAttempts(participantId, testId)
+      : getAttempts(participantId, categoryId ?? '', testType)
   showLogModal.value = true
 }
 
@@ -168,7 +216,9 @@ const pendingTestType = computed(() =>
   pendingPermission.value
     ? pendingPermission.value.testType === 'preTest'
       ? 'Pre-Test'
-      : 'Post-Test'
+      : pendingPermission.value.testType === 'postTest'
+        ? 'Post-Test'
+        : 'Knowledge Test'
     : '',
 )
 </script>
@@ -177,15 +227,15 @@ const pendingTestType = computed(() =>
   <div>
     <!-- Page header -->
     <div class="mb-6">
-      <h2 class="text-2xl font-bold text-gray-800">InClass Test Retake</h2>
+      <h2 class="text-2xl font-bold text-gray-800">Test Retake</h2>
       <p class="text-sm text-gray-500 mt-0.5">
-        Grant participants permission to retake a pre-test or post-test. Previous attempts are
-        preserved in the log.
+        Grant participants permission to retake in-class tests or class activity knowledge tests.
+        Previous attempts are preserved in the log.
       </p>
     </div>
 
     <!-- Filters -->
-    <div class="bg-white rounded-xl shadow p-5 mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="bg-white rounded-xl shadow p-5 mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Class</label>
         <select
@@ -198,10 +248,21 @@ const pendingTestType = computed(() =>
         </select>
       </div>
       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Retake Type</label>
+        <select
+          v-model="selectedScope"
+          :disabled="!selectedClassId"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+        >
+          <option value="inClass">In-Class Session Test</option>
+          <option value="classActivity">Class Activity Knowledge Test</option>
+        </select>
+      </div>
+      <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">In-Class Session</label>
         <select
           v-model="selectedInClassId"
-          :disabled="!selectedClassId"
+          :disabled="!selectedClassId || selectedScope !== 'inClass'"
           class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
         >
           <option value="">-- Select In-Class --</option>
@@ -214,15 +275,16 @@ const pendingTestType = computed(() =>
 
     <!-- Placeholder when nothing selected -->
     <div
-      v-if="!selectedClassId || !selectedInClassId"
+      v-if="!selectedClassId || (selectedScope === 'inClass' && !selectedInClassId)"
       class="bg-white rounded-xl shadow p-12 text-center text-gray-400"
     >
       <span class="text-4xl block mb-3">🔁</span>
-      Select a class and an in-class session to manage retakes.
+      Select a class{{ selectedScope === 'inClass' ? ' and an in-class session' : '' }} to manage
+      retakes.
     </div>
 
     <!-- Main content -->
-    <template v-else-if="selectedInClass">
+    <template v-else-if="selectedScope === 'inClass' && selectedInClass">
       <!-- Category tabs / sections -->
       <div
         v-for="category in selectedInClass.categories"
@@ -424,6 +486,136 @@ const pendingTestType = computed(() =>
                 </div>
               </template>
             </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template v-else-if="selectedScope === 'classActivity'">
+      <div
+        v-if="classActivityTests.length === 0"
+        class="bg-white rounded-xl shadow p-12 text-center text-gray-400"
+      >
+        <span class="text-4xl block mb-3">📝</span>
+        No class activity knowledge tests found for this class.
+      </div>
+
+      <div
+        v-for="activityTest in classActivityTests"
+        :key="activityTest.testId"
+        class="bg-white rounded-xl shadow mb-5 overflow-hidden"
+      >
+        <div class="bg-gray-50 border-b border-gray-200 px-5 py-3 flex items-center gap-3">
+          <h3 class="font-semibold text-gray-800">{{ activityTest.title }}</h3>
+          <span class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+            Knowledge Test
+          </span>
+          <span class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full">
+            Pass: {{ activityTest.passingScore }}%
+          </span>
+        </div>
+
+        <div v-if="participants.length === 0" class="px-5 py-6 text-sm text-gray-400 italic">
+          No participants in this class.
+        </div>
+
+        <div
+          v-for="participant in participants"
+          :key="participant.id"
+          class="border-b border-gray-50 px-5 py-4 hover:bg-gray-50 transition-colors last:border-b-0"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-medium text-gray-800">{{ participant.name }}</p>
+              <p class="text-xs text-gray-400">{{ participant.nip }}</p>
+            </div>
+            <div class="shrink-0">
+              <template v-if="getClassActivityAttempts(participant.id, activityTest.testId).length">
+                <div class="flex flex-col items-end gap-1">
+                  <span
+                    v-for="(att, ai) in getClassActivityAttempts(
+                      participant.id,
+                      activityTest.testId,
+                    )"
+                    :key="att.id"
+                    :class="[
+                      'text-xs px-2 py-0.5 rounded-full font-medium',
+                      att.normalizedScore >= activityTest.passingScore
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-100 text-red-600',
+                    ]"
+                  >
+                    #{{ ai + 1 }} {{ att.normalizedScore }}%
+                  </span>
+                </div>
+              </template>
+              <span v-else class="text-xs text-gray-400 italic">No attempt</span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 mt-2">
+            <button
+              v-if="getClassActivityAttempts(participant.id, activityTest.testId).length > 0"
+              @click="
+                openLog(
+                  participant.id,
+                  participant.name,
+                  undefined,
+                  'knowledgeTest',
+                  activityTest.testId,
+                )
+              "
+              class="text-xs text-blue-600 hover:text-blue-800 underline"
+            >
+              View log
+            </button>
+
+            <template v-if="getClassActivityAttempts(participant.id, activityTest.testId).length">
+              <button
+                v-if="
+                  !hasActivePermission(
+                    participant.id,
+                    undefined,
+                    'knowledgeTest',
+                    activityTest.testId,
+                    '',
+                  )
+                "
+                @click="
+                  openGrantModal(
+                    participant.id,
+                    undefined,
+                    'knowledgeTest',
+                    activityTest.testId,
+                    '',
+                  )
+                "
+                class="text-xs bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 px-2.5 py-1 rounded-lg transition"
+              >
+                + Permit Retake
+              </button>
+              <div v-else class="flex items-center gap-1">
+                <span
+                  class="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-lg"
+                >
+                  ✓ Retake Permitted
+                </span>
+                <button
+                  @click="
+                    revokePermission(
+                      participant.id,
+                      undefined,
+                      'knowledgeTest',
+                      activityTest.testId,
+                      '',
+                    )
+                  "
+                  class="text-xs text-red-500 hover:text-red-700 underline"
+                >
+                  Revoke
+                </button>
+              </div>
+            </template>
           </div>
         </div>
       </div>

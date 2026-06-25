@@ -241,9 +241,13 @@ const routes = [
         component: () => import('@/views/admin/UploadsView.vue'),
       },
       {
-        path: 'inclass-retake',
-        name: 'admin-inclass-retake',
+        path: 'test-retake',
+        name: 'admin-test-retake',
         component: () => import('@/views/admin/InClassRetakeView.vue'),
+      },
+      {
+        path: 'inclass-retake',
+        redirect: '/admin/test-retake',
       },
       {
         path: 'inclass-tokens',

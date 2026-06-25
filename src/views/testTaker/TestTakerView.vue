@@ -13,7 +13,7 @@ const test = tests.find((t) => t.id === route.params.id)
 const classId = (route.query.classId as string) || ''
 const inClassId = (route.query.inClassId as string) || ''
 const categoryId = (route.query.categoryId as string) || ''
-const testType = (route.query.testType as 'preTest' | 'postTest') || undefined
+const testType = (route.query.testType as 'preTest' | 'postTest' | 'knowledgeTest') || undefined
 const isRetake = route.query.isRetake === '1'
 
 const timeRemaining = ref(test?.timeLimit ? test.timeLimit * 60 : 0)
@@ -112,14 +112,15 @@ function submitTest() {
   const attemptNumber = previousAttemptCount.value + 1
 
   // Mark retake permission as used
-  if (isRetake && categoryId && testType) {
+  if (isRetake) {
     const perm = inClassRetakePermissions.find(
       (p) =>
         p.participantId === auth.userId &&
         p.classId === classId &&
-        p.categoryId === categoryId &&
         p.testId === String(route.params.id) &&
-        p.testType === testType &&
+        (categoryId ? p.categoryId === categoryId : !p.categoryId) &&
+        (inClassId ? p.inClassId === inClassId : !p.inClassId) &&
+        (testType ? p.testType === testType : p.testType === 'knowledgeTest') &&
         !p.usedAt,
     )
     if (perm) perm.usedAt = new Date().toISOString()

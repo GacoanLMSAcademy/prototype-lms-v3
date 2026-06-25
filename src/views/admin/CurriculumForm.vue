@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   curricula,
-  tests,
+  knowledgeTestClasses,
   inClasses,
   trainingMethods,
   trainingMethodTypes,
@@ -32,14 +32,14 @@ const selectedCategoryName = computed(() => {
 })
 
 const methodTypes: { value: string; label: string; contentLabel: string }[] = [
-  { value: 'knowledgeTest', label: 'Knowledge Test', contentLabel: 'Test' },
+  { value: 'knowledgeTest', label: 'Knowledge Test', contentLabel: 'Knowledge Test' },
   { value: 'inClass', label: 'In-Class', contentLabel: 'In-Class' },
   { value: 'uploadFile', label: 'Upload File', contentLabel: 'File Task Name' },
   ...trainingMethodTypes.map(t => ({ value: t.name.toLowerCase().replace(/\s+/g, ''), label: t.name, contentLabel: t.name + ' Method' })),
 ]
 
 function getContentList(type: string) {
-  if (type === 'knowledgeTest') return tests.map((t) => ({ id: t.id, title: t.title }))
+  if (type === 'knowledgeTest') return knowledgeTestClasses.map((kt) => ({ id: kt.id, title: kt.name }))
   if (type === 'inClass') return inClasses.map((ic) => ({ id: ic.id, title: ic.title }))
   if (type === 'uploadFile') return []
   return trainingMethods.filter(m => {
