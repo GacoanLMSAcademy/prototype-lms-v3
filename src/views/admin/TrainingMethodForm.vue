@@ -76,12 +76,12 @@ function save() {
       </div>
       <div>
         <div class="flex items-center justify-between mb-2">
-          <h3 class="font-semibold">Categories</h3>
+          <h3 class="font-semibold">Training Methods</h3>
           <button
             @click="addCategory"
             class="text-sm bg-gray-200 px-2 py-1 rounded hover:bg-gray-300"
           >
-            + Category
+            + Training Method
           </button>
         </div>
         <div
@@ -90,7 +90,7 @@ function save() {
           class="border rounded p-4 mb-4 bg-gray-50"
         >
           <div class="flex items-center justify-between mb-2">
-            <span class="text-sm font-medium">Category {{ ci + 1 }}</span
+            <span class="text-sm font-medium">Training Method {{ ci + 1 }}</span
             ><button @click="removeCategory(ci)" class="text-red-500 text-sm">Remove</button>
           </div>
           <div class="grid grid-cols-3 gap-3 mb-2">
