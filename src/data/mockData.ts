@@ -24,6 +24,8 @@ import type {
   InClassRetakePermission,
   InClassActivityCompletion,
   MateriAccessToken,
+  FeedbackSubmission,
+  InstructorRaport,
 } from '@/types'
 
 // ── Users (5 roles) ──
@@ -416,6 +418,7 @@ export const inClasses: InClass[] = [
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m1', 'm2'],
+        feedbackFormId: 'fbf1',
       },
       {
         id: 'cat2',
@@ -426,6 +429,7 @@ export const inClasses: InClass[] = [
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m3', 'm4'],
+        feedbackFormId: 'fbf1',
       },
     ],
     createdBy: 'u5',
@@ -445,6 +449,7 @@ export const inClasses: InClass[] = [
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m1'],
+        feedbackFormId: 'fbf2',
       },
       {
         id: 'cat4',
@@ -455,6 +460,7 @@ export const inClasses: InClass[] = [
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m2', 'm3'],
+        feedbackFormId: 'fbf2',
       },
     ],
     createdBy: 'u5',
@@ -698,6 +704,84 @@ export const formAssessments: FormAssessment[] = [
     createdBy: 'u5',
     createdAt: '2026-03-05T08:00:00Z',
   },
+  {
+    id: 'fbf1',
+    title: 'Feedback Sesi 1 - Komunikasi Efektif',
+    description: 'Form feedback setelah post-test sesi komunikasi efektif',
+    typeId: 'tmt10',
+    fields: [
+      {
+        id: 'fbf1q1',
+        type: 'rating',
+        label: 'Seberapa jelas materi yang disampaikan?',
+        required: true,
+        points: 25,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf1q2',
+        type: 'rating',
+        label: 'Seberapa bermanfaat sesi ini untuk pekerjaan Anda?',
+        required: true,
+        points: 25,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf1q3',
+        type: 'mcq',
+        label: 'Apakah Anda ingin sesi lanjutan?',
+        required: true,
+        points: 20,
+        options: ['Ya, sangat ingin', 'Mungkin', 'Tidak'],
+      },
+      {
+        id: 'fbf1q4',
+        type: 'essay',
+        label: 'Saran / komentar tambahan',
+        required: false,
+        points: 30,
+      },
+    ],
+    createdBy: 'u5',
+    createdAt: '2026-04-20T08:00:00Z',
+  },
+  {
+    id: 'fbf2',
+    title: 'Feedback Sesi 2 - Komunikasi Lanjutan',
+    description: 'Form feedback setelah post-test sesi komunikasi lanjutan',
+    typeId: 'tmt10',
+    fields: [
+      {
+        id: 'fbf2q1',
+        type: 'rating',
+        label: 'Penilaian terhadap instruktur',
+        required: true,
+        points: 30,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf2q2',
+        type: 'rating',
+        label: 'Kualitas materi dan latihan',
+        required: true,
+        points: 30,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf2q3',
+        type: 'essay',
+        label: 'Apa yang bisa ditingkatkan?',
+        required: false,
+        points: 40,
+      },
+    ],
+    createdBy: 'u5',
+    createdAt: '2026-04-22T08:00:00Z',
+  },
 ]
 
 // ── Training Method Types (dynamic, user-managed) ──
@@ -762,6 +846,13 @@ export const trainingMethodTypes: TrainingMethodType[] = [
     id: 'tmt9',
     name: 'Technical Test',
     description: 'Tes teknis gabungan',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'tmt10',
+    name: 'Feedback',
+    description: 'Form feedback peserta setelah post-test',
     createdBy: 'u5',
     createdAt: '2026-01-01T08:00:00Z',
   },
@@ -1423,6 +1514,36 @@ export const lgis: LGI[] = [
   { participantId: 'u7', inClassId: 'ic1', preTestScore: 55, postTestScore: 90, lgiValue: 0.78 },
 ]
 
+// ── Instructor Raport ──
+export const instructorRaports: InstructorRaport[] = [
+  {
+    id: 'ir1',
+    instructorId: 'u2',
+    month: 4,
+    year: 2026,
+    status: 'published',
+    publishedAt: '2026-04-30T23:59:59Z',
+    publishedBy: 'u5',
+    qualitativeAnalysis: 'Instructor has shown good progress in delivering materials and engaging participants. Areas for improvement: more interactive activities and better time management.',
+    quantitativeData: {
+      lgi: [
+        { participantId: 'u1', inClassId: 'ic1', preTestScore: 45, postTestScore: 82, lgiValue: 0.67 },
+        { participantId: 'u6', inClassId: 'ic1', preTestScore: 30, postTestScore: 65, lgiValue: 0.5 },
+        { participantId: 'u7', inClassId: 'ic1', preTestScore: 55, postTestScore: 90, lgiValue: 0.78 },
+      ],
+      completionRate: 100, // all participants completed all activities
+      passRate: 100, // all participants passed
+      feedbackAverage: {
+        'materi': 4.5,
+        'pengajaran': 4.2,
+        'interaksi': 4.0,
+      },
+    },
+    createdAt: '2026-04-30T10:00:00Z',
+    createdBy: 'u5',
+  },
+]
+
 // ── Participant Progress ──
 export const participantProgress: ParticipantProgress[] = [
   {
@@ -1546,5 +1667,27 @@ export const auditLogs: AuditLogEntry[] = [
     resourceId: 'ta1',
     details: 'Mengirimkan jawaban pretest',
     timestamp: '2026-03-20T09:25:00Z',
+  },
+]
+
+// ── Feedback Submissions (post-test feedback filled by participants) ──
+export const feedbackSubmissions: FeedbackSubmission[] = [
+  {
+    id: 'fb1',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    formAssessmentId: 'fbf1',
+    participantId: 'u1',
+    answers: [
+      { fieldId: 'fbf1q1', value: 4 },
+      { fieldId: 'fbf1q2', value: 5 },
+      { fieldId: 'fbf1q3', value: 'Ya, sangat ingin' },
+      {
+        fieldId: 'fbf1q4',
+        value: 'Sesi sangat bermanfaat, instruktur mudah dipahami.',
+      },
+    ],
+    submittedAt: '2026-04-21T10:00:00Z',
   },
 ]

@@ -254,6 +254,11 @@ const routes = [
         name: 'admin-inclass-tokens',
         component: () => import('@/views/admin/InClassTokenView.vue'),
       },
+      {
+        path: 'instructor-raport',
+        name: 'admin-instructor-raport',
+        component: () => import('@/views/admin/InstructorRaportList.vue'),
+      },
     ],
   },
   // ── Instructor (read-only + scoring) ──
@@ -287,9 +292,9 @@ const routes = [
         component: () => import('@/views/instructor/KHSView.vue'),
       },
       {
-        path: 'lgi',
-        name: 'instructor-lgi',
-        component: () => import('@/views/instructor/LGIView.vue'),
+        path: 'raport',
+        name: 'instructor-raport',
+        component: () => import('@/views/instructor/InstructorRaportView.vue'),
       },
       {
         path: 'uploads',
@@ -332,6 +337,11 @@ const routes = [
         path: 'inclass/:classId/:inClassId',
         name: 'participant-inclass',
         component: () => import('@/views/participant/InClassView.vue'),
+      },
+      {
+        path: 'feedback/:formId',
+        name: 'participant-feedback',
+        component: () => import('@/views/participant/FeedbackView.vue'),
       },
       {
         path: 'transcript',

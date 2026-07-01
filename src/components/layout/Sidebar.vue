@@ -43,6 +43,8 @@ const navItems = computed<MenuEntry[]>(() => {
       { label: 'Classes', to: '/admin/classes', icon: '👥' },
       { label: 'Users', to: '/admin/users', icon: '👤' },
       { label: 'Uploads', to: '/admin/uploads', icon: '📤' },
+      { label: 'Feedback', to: '/admin/feedback', icon: '💬' },
+      { label: 'Instructor Raport', to: '/admin/instructor-raport', icon: '📈' },
       { label: 'Audit Log', to: '/admin/audit', icon: '📜' },
     ]
   }
@@ -52,6 +54,7 @@ const navItems = computed<MenuEntry[]>(() => {
       { label: 'My Classes', to: '/instructor/classes', icon: '👥' },
       { label: 'KHS (Transcript)', to: '/instructor/khs', icon: '🎓' },
       { label: 'LGI (Progress)', to: '/instructor/lgi', icon: '📈' },
+      { label: 'Instructor Raport', to: '/instructor/raport', icon: '📋' },
       { label: 'Uploads', to: '/instructor/uploads', icon: '📤' },
     ]
   }

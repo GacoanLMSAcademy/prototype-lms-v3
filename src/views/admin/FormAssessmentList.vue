@@ -3,6 +3,7 @@ import { formAssessments, trainingMethodTypes } from '@/data/mockData'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const FEEDBACK_TYPE_ID = 'tmt10'
 
 function typeName(typeId?: string) {
   if (!typeId) return ''
@@ -50,7 +51,12 @@ function totalWeight(f: (typeof formAssessments)[0]) {
         <div class="flex flex-wrap gap-2 text-xs">
           <span
             v-if="f.typeId"
-            class="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full"
+            :class="[
+              'px-2 py-0.5 rounded-full border',
+              f.typeId === FEEDBACK_TYPE_ID
+                ? 'bg-pink-50 text-pink-700 border-pink-100'
+                : 'bg-blue-50 text-blue-700 border-blue-100',
+            ]"
           >
             {{ typeName(f.typeId) }}
           </span>

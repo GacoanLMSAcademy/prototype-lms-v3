@@ -78,6 +78,7 @@ export interface MateriCategory {
   preTestId: string
   postTestId: string
   materiIds: string[]
+  feedbackFormId?: string
 }
 
 export interface InClass {
@@ -90,7 +91,7 @@ export interface InClass {
 }
 
 // ── InClass ordered progression tracking ──
-export type InClassActivityType = 'preTest' | 'materi' | 'postTest'
+export type InClassActivityType = 'preTest' | 'materi' | 'postTest' | 'feedback'
 
 export interface InClassActivity {
   type: InClassActivityType
@@ -383,6 +384,23 @@ export interface FormScoreEntry {
   value: string | number
 }
 
+// ── Feedback (post-test feedback by participant) ──
+export interface FeedbackAnswer {
+  fieldId: string
+  value: string | number
+}
+
+export interface FeedbackSubmission {
+  id: string
+  classId: string
+  inClassId: string
+  categoryId: string
+  formAssessmentId: string
+  participantId: string
+  answers: FeedbackAnswer[]
+  submittedAt: string
+}
+
 export interface Assessment {
   id: string
   classId: string
@@ -407,6 +425,31 @@ export interface LGI {
   preTestScore: number
   postTestScore: number
   lgiValue: number
+}
+
+export interface InstructorRaport {
+  id: string
+  instructorId: string
+  month: number // 1-12
+  year: number
+  status: 'draft' | 'published'
+  publishedAt?: string
+  publishedBy?: string
+  qualitativeAnalysis: string
+  quantitativeData: {
+    lgi: {
+      participantId: string
+      inClassId: string
+      preTestScore: number
+      postTestScore: number
+      lgiValue: number
+    }[]
+    completionRate: number // percentage
+    passRate: number // percentage
+    feedbackAverage: Record<string, number> // average scores per feedback aspect
+  }
+  createdAt: string
+  createdBy: string
 }
 
 export interface ParticipantProgress {
