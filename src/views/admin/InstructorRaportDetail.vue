@@ -154,8 +154,8 @@ function goBack() {
           Monthly Instructor Rapport Detail
         </h2>
         <p class="text-sm text-gray-500 mt-1">
-          Instructor: <span class="font-semibold text-gray-700">{{ users.find(u => u.id === raport.instructorId)?.name || raport.instructorId }}</span> · 
-          Period: <span class="font-semibold text-gray-700">{{ new Date(2026, raport.month - 1).toLocaleString('default', { month: 'long' }) }} {{ raport.year }}</span>
+          Instructor: <span class="font-semibold text-gray-700">{{ users.find(u => u.id === raport?.instructorId)?.name || raport?.instructorId }}</span> · 
+          Period: <span class="font-semibold text-gray-700">{{ new Date(2026, raport?.month - 1).toLocaleString('default', { month: 'long' }) }} {{ raport?.year }}</span>
         </p>
       </div>
 
