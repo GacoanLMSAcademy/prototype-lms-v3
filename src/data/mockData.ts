@@ -536,6 +536,13 @@ export const sectionTypes: SectionTypeEntity[] = [
     createdBy: 'u5',
     createdAt: '2026-01-01T08:00:00Z',
   },
+  {
+    id: 'st6',
+    name: 'Kemampuan mentoring',
+    description: 'Match items from two columns',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
 ]
 
 // ── Form Assessments (for Multirater, Presentation, Validation, Skill Test, Verify) ──
@@ -1806,7 +1813,8 @@ export const instructorRaports: InstructorRaport[] = [
     status: 'published',
     publishedAt: '2026-03-31T23:59:59Z',
     publishedBy: 'u5',
-    qualitativeAnalysis: 'Good overall performance for March, but needs improvement in leadership delegation modules.',
+    qualitativeAnalysis:
+      'Good overall performance for March, but needs improvement in leadership delegation modules.',
     quantitativeData: {
       lgi: [
         {
@@ -1814,18 +1822,18 @@ export const instructorRaports: InstructorRaport[] = [
           lgiValue: 0.58,
           materiLgis: [
             { materiName: 'Dasar Kepemimpinan', lgiValue: 0.55, avgPreScore: 40, avgPostScore: 75 },
-            { materiName: 'Delegasi Efektif', lgiValue: 0.61, avgPreScore: 45, avgPostScore: 80 }
-          ]
-        }
+            { materiName: 'Delegasi Efektif', lgiValue: 0.61, avgPreScore: 45, avgPostScore: 80 },
+          ],
+        },
       ],
       completionRate: 92.0,
       passRate: 88.0,
       feedbackAverage: [
-        { sectionName: 'Kemampuan menyampaikan visi', averageScore: 4.0 },
-        { sectionName: 'Keterampilan delegasi', averageScore: 3.8 },
-        { sectionName: 'Pemberian motivasi tim', averageScore: 3.5 },
-        { sectionName: 'Pengambilan keputusan', averageScore: 4.1 },
-        { sectionName: 'Manajemen konflik', averageScore: 3.7 },
+        { sectionName: 'Communication', averageScore: 4.0 },
+        { sectionName: 'Time Management', averageScore: 3.8 },
+        { sectionName: 'Data Analyst', averageScore: 3.5 },
+        { sectionName: 'Presentation', averageScore: 4.1 },
+        { sectionName: 'Food Safety/CAPA', averageScore: 3.7 },
         { sectionName: 'Kemampuan mentoring', averageScore: 3.9 },
       ],
     },
@@ -1849,9 +1857,9 @@ export const instructorRaports: InstructorRaport[] = [
           lgiValue: 0.65,
           materiLgis: [
             { materiName: 'Teori Komunikasi', lgiValue: 0.59, avgPreScore: 42, avgPostScore: 81 },
-            { materiName: 'Praktik Komunikasi', lgiValue: 0.71, avgPreScore: 38, avgPostScore: 88 }
-          ]
-        }
+            { materiName: 'Praktik Komunikasi', lgiValue: 0.71, avgPreScore: 38, avgPostScore: 88 },
+          ],
+        },
       ],
       completionRate: 100,
       passRate: 100,
