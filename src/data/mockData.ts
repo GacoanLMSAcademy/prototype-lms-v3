@@ -24,6 +24,8 @@ import type {
   InClassRetakePermission,
   InClassActivityCompletion,
   MateriAccessToken,
+  FeedbackSubmission,
+  InstructorRaport,
 } from '@/types'
 
 // ── Users (5 roles) ──
@@ -416,6 +418,7 @@ export const inClasses: InClass[] = [
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m1', 'm2'],
+        feedbackFormId: 'fbf1',
       },
       {
         id: 'cat2',
@@ -426,6 +429,7 @@ export const inClasses: InClass[] = [
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m3', 'm4'],
+        feedbackFormId: 'fbf1',
       },
     ],
     createdBy: 'u5',
@@ -445,6 +449,7 @@ export const inClasses: InClass[] = [
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m1'],
+        feedbackFormId: 'fbf2',
       },
       {
         id: 'cat4',
@@ -455,10 +460,42 @@ export const inClasses: InClass[] = [
         preTestId: 't1',
         postTestId: 't2',
         materiIds: ['m2', 'm3'],
+        feedbackFormId: 'fbf2',
       },
     ],
     createdBy: 'u5',
     createdAt: '2026-01-20T08:00:00Z',
+  },
+  {
+    id: 'ic3',
+    title: 'Sesi 1 - Leadership Skills',
+    description: 'Pengembangan keterampilan kepemimpinan dasar',
+    categories: [
+      {
+        id: 'cat5',
+        name: 'Dasar Kepemimpinan',
+        weight: 50,
+        inClassId: 'ic3',
+        materiTypeId: 'mt1',
+        preTestId: 't1',
+        postTestId: 't2',
+        materiIds: ['m1', 'm2'],
+        feedbackFormId: 'fbf3',
+      },
+      {
+        id: 'cat6',
+        name: 'Delegasi Efektif',
+        weight: 50,
+        inClassId: 'ic3',
+        materiTypeId: 'mt1',
+        preTestId: 't1',
+        postTestId: 't2',
+        materiIds: ['m3', 'm4'],
+        feedbackFormId: 'fbf3',
+      },
+    ],
+    createdBy: 'u5',
+    createdAt: '2026-03-01T08:00:00Z',
   },
 ]
 
@@ -698,6 +735,148 @@ export const formAssessments: FormAssessment[] = [
     createdBy: 'u5',
     createdAt: '2026-03-05T08:00:00Z',
   },
+  {
+    id: 'fbf1',
+    title: 'Feedback Sesi 1 - Komunikasi Efektif',
+    description: 'Form feedback setelah post-test sesi komunikasi efektif',
+    typeId: 'tmt10',
+    fields: [
+      {
+        id: 'fbf1q1',
+        type: 'rating',
+        label: 'Seberapa jelas materi yang disampaikan?',
+        required: true,
+        points: 25,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf1q2',
+        type: 'rating',
+        label: 'Seberapa bermanfaat sesi ini untuk pekerjaan Anda?',
+        required: true,
+        points: 25,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf1q3',
+        type: 'mcq',
+        label: 'Apakah Anda ingin sesi lanjutan?',
+        required: true,
+        points: 20,
+        options: ['Ya, sangat ingin', 'Mungkin', 'Tidak'],
+      },
+      {
+        id: 'fbf1q4',
+        type: 'essay',
+        label: 'Saran / komentar tambahan',
+        required: false,
+        points: 30,
+      },
+    ],
+    createdBy: 'u5',
+    createdAt: '2026-04-20T08:00:00Z',
+  },
+  {
+    id: 'fbf2',
+    title: 'Feedback Sesi 2 - Komunikasi Lanjutan',
+    description: 'Form feedback setelah post-test sesi komunikasi lanjutan',
+    typeId: 'tmt10',
+    fields: [
+      {
+        id: 'fbf2q1',
+        type: 'rating',
+        label: 'Penilaian terhadap instruktur',
+        required: true,
+        points: 30,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf2q2',
+        type: 'rating',
+        label: 'Kualitas materi dan latihan',
+        required: true,
+        points: 30,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf2q3',
+        type: 'essay',
+        label: 'Apa yang bisa ditingkatkan?',
+        required: false,
+        points: 40,
+      },
+    ],
+    createdBy: 'u5',
+    createdAt: '2026-04-22T08:00:00Z',
+  },
+  {
+    id: 'fbf3',
+    title: 'Feedback Sesi Leadership',
+    description: 'Form feedback untuk sesi keterampilan kepemimpinan',
+    typeId: 'tmt10',
+    fields: [
+      {
+        id: 'fbf3q1',
+        type: 'rating',
+        label: 'Kemampuan menyampaikan visi',
+        required: true,
+        points: 10,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf3q2',
+        type: 'rating',
+        label: 'Keterampilan delegasi',
+        required: true,
+        points: 10,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf3q3',
+        type: 'rating',
+        label: 'Pemberian motivasi tim',
+        required: true,
+        points: 10,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf3q4',
+        type: 'rating',
+        label: 'Pengambilan keputusan',
+        required: true,
+        points: 10,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf3q5',
+        type: 'rating',
+        label: 'Manajemen konflik',
+        required: true,
+        points: 10,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+      {
+        id: 'fbf3q6',
+        type: 'rating',
+        label: 'Kemampuan mentoring',
+        required: true,
+        points: 10,
+        ratingMin: 1,
+        ratingMax: 5,
+      },
+    ],
+    createdBy: 'u5',
+    createdAt: '2026-03-01T08:00:00Z',
+  },
 ]
 
 // ── Training Method Types (dynamic, user-managed) ──
@@ -762,6 +941,13 @@ export const trainingMethodTypes: TrainingMethodType[] = [
     id: 'tmt9',
     name: 'Technical Test',
     description: 'Tes teknis gabungan',
+    createdBy: 'u5',
+    createdAt: '2026-01-01T08:00:00Z',
+  },
+  {
+    id: 'tmt10',
+    name: 'Feedback',
+    description: 'Form feedback peserta setelah post-test',
     createdBy: 'u5',
     createdAt: '2026-01-01T08:00:00Z',
   },
@@ -1128,6 +1314,29 @@ export const classes: Class[] = [
     createdAt: '2026-03-12T08:00:00Z',
   },
   {
+    id: 'cl4',
+    name: 'Supervisor Angkatan 1 - Leadership',
+    programTypeId: 'pt2', // Different program type
+    curriculumId: 'c1', // Assuming c1 is generic enough or add a new curriculum
+    instructorId: 'u2', // Ani Rahmawati
+    startDate: '2026-03-01',
+    endDate: '2026-03-31',
+    status: 'completed', // So we can generate a report for March
+    participants: ['u1', 'u8'], // Budi Santoso and Sari Dewi
+    raters: ['u4'],
+    inClassInstructorAssignments: [
+      {
+        trainingMethodId: 'ci1', // Placeholder
+        inClassId: 'ic3', // Leadership InClass
+        categoryId: 'cat5', // Leadership category
+        materiId: 'm1', // Placeholder
+        instructorId: 'u2',
+      },
+    ],
+    createdBy: 'u5',
+    createdAt: '2026-02-28T08:00:00Z',
+  },
+  {
     id: 'cl2',
     name: 'Frontliner Angkatan 1 - Reguler B',
     programTypeId: 'pt1',
@@ -1352,6 +1561,168 @@ export const inClassActivityCompletions: InClassActivityCompletion[] = [
     refId: 't2',
     completedAt: '2026-03-21T09:20:00Z',
   },
+  // Completions for cl4 (Leadership) - u1
+  {
+    id: 'iac5',
+    participantId: 'u1',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat5',
+    activityType: 'preTest',
+    refId: 't1',
+    completedAt: '2026-03-05T09:00:00Z',
+  },
+  {
+    id: 'iac6',
+    participantId: 'u1',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat5',
+    activityType: 'materi',
+    refId: 'm1',
+    completedAt: '2026-03-05T09:30:00Z',
+  },
+  {
+    id: 'iac7',
+    participantId: 'u1',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat5',
+    activityType: 'materi',
+    refId: 'm2',
+    completedAt: '2026-03-05T10:00:00Z',
+  },
+  {
+    id: 'iac8',
+    participantId: 'u1',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat5',
+    activityType: 'postTest',
+    refId: 't2',
+    completedAt: '2026-03-06T09:00:00Z',
+  },
+  {
+    id: 'iac9',
+    participantId: 'u1',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat6',
+    activityType: 'preTest',
+    refId: 't1',
+    completedAt: '2026-03-07T09:00:00Z',
+  },
+  {
+    id: 'iac10',
+    participantId: 'u1',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat6',
+    activityType: 'materi',
+    refId: 'm3',
+    completedAt: '2026-03-07T09:30:00Z',
+  },
+  {
+    id: 'iac11',
+    participantId: 'u1',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat6',
+    activityType: 'materi',
+    refId: 'm4',
+    completedAt: '2026-03-07T10:00:00Z',
+  },
+  {
+    id: 'iac12',
+    participantId: 'u1',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat6',
+    activityType: 'postTest',
+    refId: 't2',
+    completedAt: '2026-03-08T09:00:00Z',
+  },
+  // Completions for cl4 (Leadership) - u8
+  {
+    id: 'iac13',
+    participantId: 'u8',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat5',
+    activityType: 'preTest',
+    refId: 't1',
+    completedAt: '2026-03-05T09:10:00Z',
+  },
+  {
+    id: 'iac14',
+    participantId: 'u8',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat5',
+    activityType: 'materi',
+    refId: 'm1',
+    completedAt: '2026-03-05T09:40:00Z',
+  },
+  {
+    id: 'iac15',
+    participantId: 'u8',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat5',
+    activityType: 'materi',
+    refId: 'm2',
+    completedAt: '2026-03-05T10:10:00Z',
+  },
+  {
+    id: 'iac16',
+    participantId: 'u8',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat5',
+    activityType: 'postTest',
+    refId: 't2',
+    completedAt: '2026-03-06T09:10:00Z',
+  },
+  {
+    id: 'iac17',
+    participantId: 'u8',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat6',
+    activityType: 'preTest',
+    refId: 't1',
+    completedAt: '2026-03-07T09:10:00Z',
+  },
+  {
+    id: 'iac18',
+    participantId: 'u8',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat6',
+    activityType: 'materi',
+    refId: 'm3',
+    completedAt: '2026-03-07T09:40:00Z',
+  },
+  {
+    id: 'iac19',
+    participantId: 'u8',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat6',
+    activityType: 'materi',
+    refId: 'm4',
+    completedAt: '2026-03-07T10:10:00Z',
+  },
+  {
+    id: 'iac20',
+    participantId: 'u8',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat6',
+    activityType: 'postTest',
+    refId: 't2',
+    completedAt: '2026-03-08T09:10:00Z',
+  },
 ]
 
 // ── Materi Access Tokens ──
@@ -1421,6 +1792,81 @@ export const lgis: LGI[] = [
   { participantId: 'u1', inClassId: 'ic1', preTestScore: 45, postTestScore: 82, lgiValue: 0.67 },
   { participantId: 'u6', inClassId: 'ic1', preTestScore: 30, postTestScore: 65, lgiValue: 0.5 },
   { participantId: 'u7', inClassId: 'ic1', preTestScore: 55, postTestScore: 90, lgiValue: 0.78 },
+  { participantId: 'u1', inClassId: 'ic3', preTestScore: 60, postTestScore: 85, lgiValue: 0.625 },
+  { participantId: 'u8', inClassId: 'ic3', preTestScore: 50, postTestScore: 75, lgiValue: 0.5 },
+]
+
+// ── Instructor Raport ──
+export const instructorRaports: InstructorRaport[] = [
+  {
+    id: 'ir_mar_u2',
+    instructorId: 'u2',
+    month: 3,
+    year: 2026,
+    status: 'published',
+    publishedAt: '2026-03-31T23:59:59Z',
+    publishedBy: 'u5',
+    qualitativeAnalysis: 'Good overall performance for March, but needs improvement in leadership delegation modules.',
+    quantitativeData: {
+      lgi: [
+        {
+          programTypeName: 'SOS',
+          lgiValue: 0.58,
+          materiLgis: [
+            { materiName: 'Dasar Kepemimpinan', lgiValue: 0.55, avgPreScore: 40, avgPostScore: 75 },
+            { materiName: 'Delegasi Efektif', lgiValue: 0.61, avgPreScore: 45, avgPostScore: 80 }
+          ]
+        }
+      ],
+      completionRate: 92.0,
+      passRate: 88.0,
+      feedbackAverage: [
+        { sectionName: 'Kemampuan menyampaikan visi', averageScore: 4.0 },
+        { sectionName: 'Keterampilan delegasi', averageScore: 3.8 },
+        { sectionName: 'Pemberian motivasi tim', averageScore: 3.5 },
+        { sectionName: 'Pengambilan keputusan', averageScore: 4.1 },
+        { sectionName: 'Manajemen konflik', averageScore: 3.7 },
+        { sectionName: 'Kemampuan mentoring', averageScore: 3.9 },
+      ],
+    },
+    createdAt: '2026-03-30T10:00:00Z',
+    createdBy: 'u5',
+  },
+  {
+    id: 'ir1',
+    instructorId: 'u2',
+    month: 4,
+    year: 2026,
+    status: 'draft',
+    publishedAt: '2026-04-30T23:59:59Z',
+    publishedBy: 'u5',
+    qualitativeAnalysis:
+      'Instructor has shown good progress in delivering materials and engaging participants. Areas for improvement: more interactive activities and better time management.',
+    quantitativeData: {
+      lgi: [
+        {
+          programTypeName: 'TOS',
+          lgiValue: 0.65,
+          materiLgis: [
+            { materiName: 'Teori Komunikasi', lgiValue: 0.59, avgPreScore: 42, avgPostScore: 81 },
+            { materiName: 'Praktik Komunikasi', lgiValue: 0.71, avgPreScore: 38, avgPostScore: 88 }
+          ]
+        }
+      ],
+      completionRate: 100,
+      passRate: 100,
+      feedbackAverage: [
+        { sectionName: 'Kemampuan menyampaikan visi', averageScore: 4.5 },
+        { sectionName: 'Keterampilan delegasi', averageScore: 4.2 },
+        { sectionName: 'Pemberian motivasi tim', averageScore: 4.0 },
+        { sectionName: 'Pengambilan keputusan', averageScore: 4.6 },
+        { sectionName: 'Manajemen konflik', averageScore: 4.1 },
+        { sectionName: 'Kemampuan mentoring', averageScore: 4.3 },
+      ],
+    },
+    createdAt: '2026-04-30T10:00:00Z',
+    createdBy: 'u5',
+  },
 ]
 
 // ── Participant Progress ──
@@ -1546,5 +1992,99 @@ export const auditLogs: AuditLogEntry[] = [
     resourceId: 'ta1',
     details: 'Mengirimkan jawaban pretest',
     timestamp: '2026-03-20T09:25:00Z',
+  },
+]
+
+// ── Feedback Submissions (post-test feedback filled by participants) ──
+export const feedbackSubmissions: FeedbackSubmission[] = [
+  {
+    id: 'fb1',
+    classId: 'cl1',
+    inClassId: 'ic1',
+    categoryId: 'cat1',
+    formAssessmentId: 'fbf1',
+    participantId: 'u1',
+    answers: [
+      { fieldId: 'fbf1q1', value: 4 },
+      { fieldId: 'fbf1q2', value: 5 },
+      { fieldId: 'fbf1q3', value: 'Ya, sangat ingin' },
+      {
+        fieldId: 'fbf1q4',
+        value: 'Sesi sangat bermanfaat, instruktur mudah dipahami.',
+      },
+    ],
+    submittedAt: '2026-04-21T10:00:00Z',
+  },
+  // Feedback for cl4 (Leadership) - u1 - cat5
+  {
+    id: 'fb2',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat5',
+    formAssessmentId: 'fbf3',
+    participantId: 'u1',
+    answers: [
+      { fieldId: 'fbf3q1', value: 4 },
+      { fieldId: 'fbf3q2', value: 3 },
+      { fieldId: 'fbf3q3', value: 4 },
+      { fieldId: 'fbf3q4', value: 5 },
+      { fieldId: 'fbf3q5', value: 3 },
+      { fieldId: 'fbf3q6', value: 4 },
+    ],
+    submittedAt: '2026-03-08T10:00:00Z',
+  },
+  // Feedback for cl4 (Leadership) - u1 - cat6
+  {
+    id: 'fb3',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat6',
+    formAssessmentId: 'fbf3',
+    participantId: 'u1',
+    answers: [
+      { fieldId: 'fbf3q1', value: 5 },
+      { fieldId: 'fbf3q2', value: 4 },
+      { fieldId: 'fbf3q3', value: 4 },
+      { fieldId: 'fbf3q4', value: 4 },
+      { fieldId: 'fbf3q5', value: 4 },
+      { fieldId: 'fbf3q6', value: 5 },
+    ],
+    submittedAt: '2026-03-09T10:00:00Z',
+  },
+  // Feedback for cl4 (Leadership) - u8 - cat5
+  {
+    id: 'fb4',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat5',
+    formAssessmentId: 'fbf3',
+    participantId: 'u8',
+    answers: [
+      { fieldId: 'fbf3q1', value: 3 },
+      { fieldId: 'fbf3q2', value: 4 },
+      { fieldId: 'fbf3q3', value: 3 },
+      { fieldId: 'fbf3q4', value: 4 },
+      { fieldId: 'fbf3q5', value: 4 },
+      { fieldId: 'fbf3q6', value: 3 },
+    ],
+    submittedAt: '2026-03-08T10:15:00Z',
+  },
+  // Feedback for cl4 (Leadership) - u8 - cat6
+  {
+    id: 'fb5',
+    classId: 'cl4',
+    inClassId: 'ic3',
+    categoryId: 'cat6',
+    formAssessmentId: 'fbf3',
+    participantId: 'u8',
+    answers: [
+      { fieldId: 'fbf3q1', value: 4 },
+      { fieldId: 'fbf3q2', value: 3 },
+      { fieldId: 'fbf3q3', value: 3 },
+      { fieldId: 'fbf3q4', value: 3 },
+      { fieldId: 'fbf3q5', value: 3 },
+      { fieldId: 'fbf3q6', value: 4 },
+    ],
+    submittedAt: '2026-03-09T10:15:00Z',
   },
 ]

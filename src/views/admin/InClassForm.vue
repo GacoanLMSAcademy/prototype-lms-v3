@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { inClasses, tests, materis, materiTypes } from '@/data/mockData'
+import { inClasses, tests, materis, materiTypes, formAssessments } from '@/data/mockData'
 import type { MateriCategory } from '@/types'
 
 const route = useRoute()
@@ -13,6 +13,11 @@ const title = ref(existing?.title ?? '')
 const description = ref(existing?.description ?? '')
 const categories = ref<MateriCategory[]>(existing?.categories ?? [])
 
+const FEEDBACK_TYPE_ID = 'tmt10'
+const feedbackForms = computed(() =>
+  formAssessments.filter((f) => f.typeId === FEEDBACK_TYPE_ID),
+)
+
 function addMateri() {
   categories.value.push({
     id: 'cat' + Date.now(),
@@ -23,6 +28,7 @@ function addMateri() {
     preTestId: '',
     postTestId: '',
     materiIds: [],
+    feedbackFormId: '',
   })
 }
 function removeMateri(idx: number) {
@@ -92,7 +98,7 @@ function save() {
               </select>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="grid grid-cols-3 gap-3 mb-3">
             <div>
               <label class="text-xs">Pre-Test</label
               ><select v-model="cat.preTestId" class="w-full border rounded px-2 py-1 text-sm">
@@ -106,6 +112,21 @@ function save() {
                 <option value="">--</option>
                 <option v-for="t in tests" :key="t.id" :value="t.id">{{ t.title }}</option>
               </select>
+            </div>
+            <div>
+              <label class="text-xs">Feedback Form</label
+              ><select
+                v-model="cat.feedbackFormId"
+                class="w-full border rounded px-2 py-1 text-sm"
+              >
+                <option value="">--</option>
+                <option v-for="f in feedbackForms" :key="f.id" :value="f.id">
+                  {{ f.title }}
+                </option>
+              </select>
+              <p v-if="feedbackForms.length === 0" class="text-[10px] text-gray-400 mt-0.5">
+                No feedback forms (Training Method Type = Feedback) yet.
+              </p>
             </div>
           </div>
           <div>

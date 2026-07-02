@@ -11,6 +11,8 @@ import {
   testAttempts,
   inClassActivityCompletions,
   materiAccessTokens,
+  feedbackSubmissions,
+  formAssessments,
 } from '@/data/mockData'
 import type { InClassActivity } from '@/types'
 
@@ -43,6 +45,8 @@ function buildActivities(categoryId: string): InClassActivity[] {
   if (cat.preTestId) seq.push({ type: 'preTest', refId: cat.preTestId, order: order++ })
   for (const mId of cat.materiIds) seq.push({ type: 'materi', refId: mId, order: order++ })
   if (cat.postTestId) seq.push({ type: 'postTest', refId: cat.postTestId, order: order++ })
+  if (cat.feedbackFormId)
+    seq.push({ type: 'feedback', refId: cat.feedbackFormId, order: order++ })
   return seq
 }
 
@@ -81,6 +85,16 @@ function isActivityDone(categoryId: string, type: InClassActivity['type'], refId
         a.categoryId === categoryId &&
         a.testType === type &&
         a.status === 'completed',
+    )
+  }
+  if (type === 'feedback') {
+    return feedbackSubmissions.some(
+      (f) =>
+        f.participantId === auth.userId &&
+        f.classId === classId &&
+        f.inClassId === inClassId &&
+        f.categoryId === categoryId &&
+        f.formAssessmentId === refId,
     )
   }
   return inClassActivityCompletions.some(
@@ -137,6 +151,12 @@ function goToTest(categoryId: string, testId: string, testType: 'preTest' | 'pos
   router.push(`/participant/tests/${testId}/take?${params.toString()}`)
 }
 
+// ── Navigate to feedback form ──
+function goToFeedback(categoryId: string, formId: string) {
+  const params = new URLSearchParams({ classId, inClassId, categoryId })
+  router.push(`/participant/feedback/${formId}?${params.toString()}`)
+}
+
 // ── Token entry modal (to unlock a locked category) ──
 const showTokenModal = ref(false)
 const tokenInput = ref('')
@@ -183,9 +203,13 @@ function materiIcon(id: string) {
   const map: Record<string, string> = { pdf: '📄', slide: '📊', video: '🎬', h5p: '🎮' }
   return t && map[t] ? map[t] : '📚'
 }
+function feedbackTitle(id: string) {
+  return formAssessments.find((f) => f.id === id)?.title ?? id
+}
 function actLabel(a: InClassActivity) {
   if (a.type === 'preTest') return `Pre-Test: ${testTitle(a.refId)}`
   if (a.type === 'postTest') return `Post-Test: ${testTitle(a.refId)}`
+  if (a.type === 'feedback') return `Feedback: ${feedbackTitle(a.refId)}`
   return `${materiIcon(a.refId)} ${materiTitle(a.refId)}`
 }
 </script>
@@ -363,7 +387,9 @@ function actLabel(a: InClassActivity) {
                             ? 'bg-indigo-100 text-indigo-700'
                             : activity.type === 'postTest'
                               ? 'bg-teal-100 text-teal-700'
-                              : 'bg-amber-100 text-amber-700',
+                              : activity.type === 'feedback'
+                                ? 'bg-pink-100 text-pink-700'
+                                : 'bg-amber-100 text-amber-700',
                         ]"
                       >
                         {{
@@ -371,7 +397,9 @@ function actLabel(a: InClassActivity) {
                             ? 'Pre-Test'
                             : activity.type === 'postTest'
                               ? 'Post-Test'
-                              : 'Materi'
+                              : activity.type === 'feedback'
+                                ? 'Feedback'
+                                : 'Materi'
                         }}
                       </span>
                       <span
@@ -425,6 +453,19 @@ function actLabel(a: InClassActivity) {
                       class="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg hover:bg-amber-600 transition font-medium"
                     >
                       Mark Done
+                    </button>
+                    <button
+                      v-else-if="
+                        isActivityUnlocked(
+                          buildActivities(activeCategory.id),
+                          activeCategory.id,
+                          activity,
+                        ) && activity.type === 'feedback'
+                      "
+                      @click="goToFeedback(activeCategory.id, activity.refId)"
+                      class="text-xs bg-pink-600 text-white px-3 py-1.5 rounded-lg hover:bg-pink-700 transition font-medium"
+                    >
+                      Fill Feedback
                     </button>
                     <span
                       v-else
