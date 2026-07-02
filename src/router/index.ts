@@ -254,11 +254,17 @@ const routes = [
         name: 'admin-inclass-tokens',
         component: () => import('@/views/admin/InClassTokenView.vue'),
       },
-      {
-        path: 'instructor-raport',
-        name: 'admin-instructor-raport',
-        component: () => import('@/views/admin/InstructorRaportList.vue'),
-      },
+        {
+          path: 'instructor-raport',
+          name: 'admin-instructor-raport',
+          component: () => import('@/views/admin/InstructorRaportList.vue'),
+        },
+        {
+          path: 'instructor-raport/:id',
+          name: 'admin-instructor-raport-detail',
+          component: () => import('@/views/admin/InstructorRaportDetail.vue'),
+        },
+
     ],
   },
   // ── Instructor (read-only + scoring) ──
@@ -291,11 +297,17 @@ const routes = [
         name: 'instructor-khs',
         component: () => import('@/views/instructor/KHSView.vue'),
       },
-      {
-        path: 'raport',
-        name: 'instructor-raport',
-        component: () => import('@/views/instructor/InstructorRaportView.vue'),
-      },
+        {
+          path: 'raport',
+          name: 'instructor-raport',
+          component: () => import('@/views/instructor/InstructorRaportView.vue'),
+        },
+        {
+          path: 'raport/:id',
+          name: 'instructor-raport-detail',
+          component: () => import('@/views/instructor/InstructorRaportDetail.vue'),
+        },
+
       {
         path: 'uploads',
         name: 'instructor-uploads',

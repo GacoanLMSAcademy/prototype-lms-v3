@@ -438,15 +438,19 @@ export interface InstructorRaport {
   qualitativeAnalysis: string
   quantitativeData: {
     lgi: {
-      participantId: string
-      inClassId: string
-      preTestScore: number
-      postTestScore: number
-      lgiValue: number
+      programTypeName: string
+      lgiValue: number // Average LGI of all materis in this program type
+      materiLgis: {
+        materiName: string
+        lgiValue: number
+      }[]
     }[]
     completionRate: number // percentage
     passRate: number // percentage
-    feedbackAverage: Record<string, number> // average scores per feedback aspect
+    feedbackAverage: {
+      sectionName: string
+      averageScore: number
+    }[] // exactly 6 sections
   }
   createdAt: string
   createdBy: string
