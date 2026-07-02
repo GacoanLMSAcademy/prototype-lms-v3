@@ -440,10 +440,13 @@ export interface InstructorRaport {
     lgi: {
       programTypeName: string
       lgiValue: number // Average LGI of all materis in this program type
-      materiLgis: {
-        materiName: string
-        lgiValue: number
-      }[]
+       materiLgis: {
+         materiName: string
+         lgiValue: number
+         avgPreScore: number
+         avgPostScore: number
+       }[]
+
     }[]
     completionRate: number // percentage
     passRate: number // percentage

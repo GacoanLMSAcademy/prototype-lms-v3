@@ -3,6 +3,7 @@ import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import SpiderChart from '@/components/SpiderChart.vue'
+import MetricBarChart from '@/components/MetricBarChart.vue'
 import {
   instructorRaports,
   users,
@@ -16,6 +17,33 @@ const raportId = route.params.id as string
 const raport = computed(() => instructorRaports.find(r => r.id === raportId && r.status === 'published'))
 
 const expandedPrograms = ref<Record<string, boolean>>({})
+
+// --- Comparison Logic ---
+const prevRaport = computed(() => {
+  if (!raport.value) return null
+  const prevMonth = raport.value.month === 1 ? 12 : raport.value.month - 1
+  const prevYear = raport.value.month === 1 ? raport.value.year - 1 : raport.value.year
+  return instructorRaports.find(r => 
+    r.instructorId === raport.value?.instructorId && 
+    r.month === prevMonth && 
+    r.year === prevYear
+  )
+})
+
+function getTrend(current: number, previous: number | undefined) {
+  if (previous === undefined) return { value: 0, direction: 'stable', icon: '—', color: 'text-gray-400' }
+  const diff = current - previous
+  if (diff > 0) return { value: diff, direction: 'up', icon: '▲', color: 'text-emerald-600' }
+  if (diff < 0) return { value: Math.abs(diff), direction: 'down', icon: '▼', color: 'text-red-600' }
+  return { value: 0, direction: 'stable', icon: '—', color: 'text-gray-400' }
+}
+
+function getProgramTrend(programName: string, currentLgi: number) {
+  if (!prevRaport.value) return getTrend(currentLgi, undefined)
+  const prevProg = prevRaport.value.quantitativeData.lgi.find(p => p.programTypeName === programName)
+  return getTrend(currentLgi, prevProg?.lgiValue)
+}
+// ------------------------
 
 onMounted(() => {
   if (raport.value) {
@@ -69,9 +97,12 @@ function goBack() {
                   <h4 class="font-bold text-slate-900 mt-0.5">{{ item.programTypeName }}</h4>
                 </div>
                 <div class="flex items-center gap-3">
-                  <span class="text-sm font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">
-                    Avg LGI: {{ item.lgiValue.toFixed(2) }}
-                  </span>
+                  <div class="flex items-center gap-1.5 text-sm font-bold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">
+                    <span>Avg LGI: {{ item.lgiValue.toFixed(2) }}</span>
+                    <span :class="['text-[10px]', getProgramTrend(item.programTypeName, item.lgiValue).color]">
+                      {{ getProgramTrend(item.programTypeName, item.lgiValue).icon }} {{ getProgramTrend(item.programTypeName, item.lgiValue).value.toFixed(2) }}
+                    </span>
+                  </div>
                   <span class="text-xs transition-transform" :class="expandedPrograms[item.programTypeName] ? 'rotate-90' : ''">▶</span>
                 </div>
               </button>
@@ -81,14 +112,16 @@ function goBack() {
                   <thead>
                     <tr class="text-slate-500 font-semibold border-b border-slate-100">
                       <th class="pb-2">Materi Name</th>
-                      <th class="pb-2 text-right">LGI Score</th>
+                      <th class="pb-2 text-right">LGI Performance (Pre | Post | LGI)</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr v-for="m in item.materiLgis" :key="m.materiName" class="border-b border-slate-100/50 last:border-b-0">
-                      <td class="py-2.5 font-medium text-slate-700">{{ m.materiName }}</td>
-                      <td class="py-2.5 text-right font-bold text-slate-900">
-                        {{ m.lgiValue.toFixed(2) }}
+                      <td class="py-3 font-medium text-slate-700 w-1/3">{{ m.materiName }}</td>
+                      <td class="py-3 text-right">
+                        <div class="flex justify-end">
+                          <MetricBarChart :pre="m.avgPreScore" :post="m.avgPostScore" :lgi="m.lgiValue" />
+                        </div>
                       </td>
                     </tr>
                   </tbody>
@@ -101,16 +134,28 @@ function goBack() {
           <div class="grid grid-cols-2 gap-4">
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Completion Rate</p>
-              <h4 class="text-2xl font-bold text-slate-900 mt-2">
-                {{ raport.quantitativeData.completionRate.toFixed(1) }}%
-              </h4>
+              <div class="flex items-center justify-center gap-2 mt-2">
+                <h4 class="text-2xl font-bold text-slate-900">
+                  {{ raport.quantitativeData.completionRate.toFixed(1) }}%
+                </h4>
+                <span :class="['text-xs font-bold', getTrend(raport.quantitativeData.completionRate, prevRaport?.quantitativeData.completionRate).color]">
+                  {{ getTrend(raport.quantitativeData.completionRate, prevRaport?.quantitativeData.completionRate).icon }} 
+                  {{ getTrend(raport.quantitativeData.completionRate, prevRaport?.quantitativeData.completionRate).value.toFixed(1) }}%
+                </span>
+              </div>
               <p class="text-[10px] text-slate-400 mt-1">Activities fully completed</p>
             </div>
             <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 text-center">
               <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pass Rate</p>
-              <h4 class="text-2xl font-bold text-emerald-600 mt-2">
-                {{ raport.quantitativeData.passRate.toFixed(1) }}%
-              </h4>
+              <div class="flex items-center justify-center gap-2 mt-2">
+                <h4 class="text-2xl font-bold text-emerald-600">
+                  {{ raport.quantitativeData.passRate.toFixed(1) }}%
+                </h4>
+                <span :class="['text-xs font-bold', getTrend(raport.quantitativeData.passRate, prevRaport?.quantitativeData.passRate).color]">
+                  {{ getTrend(raport.quantitativeData.passRate, prevRaport?.quantitativeData.passRate).icon }} 
+                  {{ getTrend(raport.quantitativeData.passRate, prevRaport?.quantitativeData.passRate).value.toFixed(1) }}%
+                </span>
+              </div>
               <p class="text-[10px] text-slate-400 mt-1">Passing standard achieved</p>
             </div>
           </div>
