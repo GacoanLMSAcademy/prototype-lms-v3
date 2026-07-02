@@ -230,16 +230,22 @@ const routes = [
         name: 'admin-users',
         component: () => import('@/views/admin/UserManagement.vue'),
       },
-      {
-        path: 'audit',
-        name: 'admin-audit',
-        component: () => import('@/views/admin/AuditLogView.vue'),
-      },
-      {
-        path: 'uploads',
-        name: 'admin-uploads',
-        component: () => import('@/views/admin/UploadsView.vue'),
-      },
+       {
+         path: 'audit',
+         name: 'admin-audit',
+         component: () => import('@/views/admin/AuditLogView.vue'),
+       },
+       {
+         path: 'feedback',
+         name: 'admin-feedback',
+         component: () => import('@/views/admin/FeedbackView.vue'),
+       },
+       {
+         path: 'uploads',
+         name: 'admin-uploads',
+         component: () => import('@/views/admin/UploadsView.vue'),
+       },
+
       {
         path: 'test-retake',
         name: 'admin-test-retake',
